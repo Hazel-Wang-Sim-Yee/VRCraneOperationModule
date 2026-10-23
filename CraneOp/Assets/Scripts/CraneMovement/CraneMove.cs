@@ -36,6 +36,11 @@ public class CraneMove : MonoBehaviour
         if (transform.position == targetPosition)
         {
             isMoving = false;
+            UI ui = FindObjectOfType<UI>();
+            if (ui != null)
+            {
+                ui.UpdateFeedbackText("Crane can't move further.");
+            }
         }
     }
 
@@ -72,10 +77,27 @@ public class CraneMove : MonoBehaviour
     public void MoveBack()
     {
         MoveToTarget(Direction.Back);
+        // Prevent the incorrect signal count from counting twice when the button is pressed and released
+        if (GameObject.Find("Back").GetComponent<ControllerState>().isButtonPressed == true)
+        {
+            if (SignalmanManager.instance.currentSignal != Direction.Back.ToString())
+            {
+                SignalmanManager.instance.incorrectSignals--;
+            }
+        }
     }
     public void MoveFront()
     {
         MoveToTarget(Direction.Front);
+
+        // Prevent the incorrect signal count from counting twice when the button is pressed and released
+        if (GameObject.Find("Front").GetComponent<ControllerState>().isButtonPressed == true)
+        {
+            if (SignalmanManager.instance.currentSignal != Direction.Front.ToString())
+            {
+                SignalmanManager.instance.incorrectSignals--;
+            }
+        }
     }
     public void StopMovement()
     {

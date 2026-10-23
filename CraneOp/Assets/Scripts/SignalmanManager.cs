@@ -19,11 +19,12 @@ public class SignalmanManager : MonoBehaviour
         Left,
         Right,
         Back,
-        Front
+        Front,
+        HoistUp,
+        HoistDown,
     }
     public int currentSignalIndex;
     public GameObject[] targets;
-    CraneObjectMove craneObjectMove;
 
     void Awake()
     {
@@ -39,7 +40,6 @@ public class SignalmanManager : MonoBehaviour
 
     void Start()
     {
-        craneObjectMove = FindObjectOfType<CraneObjectMove>();
         // Initialize the signalman signal to the first target area
         currentSignalIndex = 0;
         foreach (GameObject target in targets)
@@ -63,7 +63,11 @@ public class SignalmanManager : MonoBehaviour
         currentSignalIndex++;
         if (currentSignalIndex >= targets.Length)
         {
-            Debug.Log("All target reached!");
+            UI ui = FindObjectOfType<UI>();
+            if (ui != null)
+            {
+                ui.UpdateFeedbackText("All target areas completed!");
+            }
             return;
         }
         foreach (GameObject target in targets)
@@ -82,18 +86,23 @@ public class SignalmanManager : MonoBehaviour
         return;
 
         // Get the current position of the crane and the target area
-        Vector3 cranePosition = craneObjectMove.transform.position;
+        Vector3 loadPosition = GameObject.Find("load").transform.position;
         Vector3 targetPosition = targets[currentSignalIndex].transform.position;
 
         // Calculate the difference in position between the crane and the target area
-        float xDifference = targetPosition.x - cranePosition.x;
-        float zDifference = targetPosition.z - cranePosition.z;
+        float xDifference = targetPosition.x - loadPosition.x;
+        float zDifference = targetPosition.z - loadPosition.z;
+        float yDifference = targetPosition.y - loadPosition.y;
 
         if (Mathf.Abs(xDifference) > Mathf.Abs(zDifference))
         {
             currentSignal = xDifference > 0 ? "Right" : "Left";
         }
-        else if (Mathf.Abs(zDifference) > 0)
+        else if (Mathf.Abs(yDifference) > Mathf.Abs(zDifference))
+        {
+            currentSignal = yDifference > 0 ? "Up" : "Down";
+        }
+        else
         {
             currentSignal = zDifference > 0 ? "Front" : "Back";
         }

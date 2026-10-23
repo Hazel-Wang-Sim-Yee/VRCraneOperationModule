@@ -14,6 +14,8 @@ public static Events Instance { get; private set; }
     public event Action onMoveFront;
     public event Action onMoveBack;
     public event Action onStopMovement;
+    public event Action onHoistUp;
+    public event Action onHoistDown;
 
     void Awake()
     {
@@ -26,6 +28,7 @@ public static Events Instance { get; private set; }
         Instance = this;
     }
 
+    // Crane Movement Events
     public void MoveLeft()
     {
         onMoveLeft?.Invoke();
@@ -49,5 +52,15 @@ public static Events Instance { get; private set; }
     public void StopMovement()
     {
         onStopMovement?.Invoke();
+    }
+
+    public void HoistUp()
+    {
+        onHoistUp?.Invoke();
+    }
+
+    public void HoistDown()
+    {
+        onHoistDown?.Invoke();
     }
 }

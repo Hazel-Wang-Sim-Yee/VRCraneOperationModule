@@ -39,15 +39,44 @@ public class ColliderDetect : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Crane") && CompareTag("CraneDestination"))
+        if (other.CompareTag("Load") && CompareTag("CraneDestination"))
         {
             SignalmanManager.instance.NextArea();
         }
         else if (other.CompareTag("Crane"))
         {
-            CraneMove craneMove = FindObjectOfType<CraneMove>();
-            if (craneMove.isMoving)
-                craneMove.StopMovement();
+            Events.Instance.StopMovement();
+        }
+        if (other.CompareTag("Rope") && gameObject.name == "RopeGone")
+        {
+            // When the rope is goes up past a certain point, the rope mesh renderer is disabled to make it invisible.
+            MeshRenderer ropeRenderer = other.GetComponent<MeshRenderer>();
+            MeshRenderer ropeChildRenderer = other.transform.GetChild(0).GetComponent<MeshRenderer>();
+            ropeRenderer.enabled = false;
+            ropeChildRenderer.enabled = false;
+        }
+    }
+
+    void OnTriggerExit(Collider other)
+    {
+        if (other.CompareTag("Rope") && gameObject.name == "RopeGone")
+        {
+            // When the rope is goes down past a certain point, the rope mesh renderer is enabled to make it visible again.
+            MeshRenderer ropeRenderer = other.GetComponent<MeshRenderer>();
+            MeshRenderer ropeChildRenderer = other.transform.GetChild(0).GetComponent<MeshRenderer>();
+            ropeRenderer.enabled = true;
+            ropeChildRenderer.enabled = true;
+        }
+    }
+
+    void OnTriggerStay(Collider other)
+    {
+        if (other.CompareTag("Rope") && gameObject.name == "HoistUp")
+        {
+            // Ensure that the isTrigger property of the rope collider is set to true when the hoist is up to prevent physics problems.
+            other.isTrigger = true;
+            CraneHoistMove craneHoistMove = GameObject.Find("hoist").GetComponent<CraneHoistMove>();
+            craneHoistMove.isHoistUp = true;
         }
     }
 }

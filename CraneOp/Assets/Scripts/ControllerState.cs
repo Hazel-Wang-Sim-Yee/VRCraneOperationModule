@@ -10,7 +10,7 @@ public class ControllerState : MonoBehaviour
 {
     [SerializeField] Color activeColor;
     [SerializeField] Color inactiveColor;
-    [SerializeField] bool isButtonPressed = false;
+    public bool isButtonPressed = false;
     private string buttonName;
     [SerializeField] Button[] otherButtons;
 
@@ -33,7 +33,21 @@ public class ControllerState : MonoBehaviour
         {
             Events.Instance.onMoveBack += ToggleButtonState;
         }
+        else if (buttonName == "Up")
+        {
+            Events.Instance.onHoistUp += ToggleButtonState;
+        }
+        else if (buttonName == "Down")
+        {
+            Events.Instance.onHoistDown += ToggleButtonState;
+        }
     }
+
+    /// <summary>
+    /// Toggles the state of the button when it is pressed.
+    /// If the button is pressed, it disables other buttons to prevent multiple movements at once.
+    /// If the button is released, it re-enables the other buttons. It also updates the button color based on its state.
+    /// </summary>
     public void ToggleButtonState()
     {
         isButtonPressed = !isButtonPressed;
@@ -53,6 +67,12 @@ public class ControllerState : MonoBehaviour
         }
         UpdateButtonColor();
     }
+
+    /// <summary>
+    /// Updates the color of the button based on its state (pressed or not pressed).
+    /// If the button is pressed, it sets the color to activeColor; otherwise, it sets it to inactiveColor.
+    /// This is used to provide visual feedback to the user about the button's state.
+    /// </summary>
     void UpdateButtonColor()
     {
         Button button = GetComponent<Button>();
@@ -64,6 +84,4 @@ public class ControllerState : MonoBehaviour
         colorBlock.normalColor = isButtonPressed ? activeColor : inactiveColor;
         button.colors = colorBlock;
     }
-
-
 }

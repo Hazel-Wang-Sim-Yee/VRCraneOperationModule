@@ -1,6 +1,6 @@
 /*
     This script is responsible for moving the crane objects (hook, load, etc.) in the game.
-    It allows the crane to move left, right, up, and down based on user input.
+    It allows the crane objects to move left and right based on user input, while ensuring they stay aligned with the crane's z position.
 */
 using UnityEngine;
 
@@ -10,10 +10,7 @@ public class CraneObjectMove : MonoBehaviour
     {
         Left,
         Right,
-        HoistUp,
-        HoistDown
     }
-    [SerializeField] GameObject rope;
     private Vector3 targetPosition;
     public bool isMoving = false;
 
@@ -42,7 +39,12 @@ public class CraneObjectMove : MonoBehaviour
 
         if (transform.position == targetPosition)
         {
-            isMoving = false;
+            UI ui = FindObjectOfType<UI>();
+            if (ui != null)
+            {
+                ui.UpdateFeedbackText("Crane can't move further.");
+            }
+            StopMovement();
         }
     }
 
@@ -65,12 +67,6 @@ public class CraneObjectMove : MonoBehaviour
             case Direction.Right:
                 destination.x = GameObject.Find("RightBoundary").transform.position.x;
                 break;
-            case Direction.HoistUp:
-                rope.transform.Translate(Vector3.up * moveSpeed * Time.deltaTime);
-                break;
-            case Direction.HoistDown:
-                rope.transform.Translate(Vector3.down * moveSpeed * Time.deltaTime);
-                break;
         }
         if (SignalmanManager.instance.currentSignal != direction.ToString())
         {
@@ -85,19 +81,29 @@ public class CraneObjectMove : MonoBehaviour
     public void MoveLeft()
     {
         MoveToTarget(Direction.Left);
+        // Prevent the incorrect signal count from counting twice when the button is pressed and released
+        if (GameObject.Find("Left").GetComponent<ControllerState>().isButtonPressed == true)
+        {
+            if (SignalmanManager.instance.currentSignal != Direction.Left.ToString())
+            {
+                SignalmanManager.instance.incorrectSignals--;
+            }
+        }
     }
     public void MoveRight()
     {
         MoveToTarget(Direction.Right);
+        // Prevent the incorrect signal count from counting twice when the button is pressed and released
+        if (GameObject.Find("Right").GetComponent<ControllerState>().isButtonPressed == true)
+        {
+            if (SignalmanManager.instance.currentSignal != Direction.Right.ToString())
+            {
+                SignalmanManager.instance.incorrectSignals--;
+            }
+        }
     }
     public void StopMovement()
     {
-        // Ensure both the crane and the crane objects stop moving
         isMoving = false;
-        CraneMove craneMove = FindObjectOfType<CraneMove>();
-        if (craneMove != null)
-        {
-            craneMove.StopMovement();
-        }
     }
 }
