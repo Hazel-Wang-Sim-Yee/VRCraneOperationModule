@@ -13,16 +13,6 @@ public class SignalmanManager : MonoBehaviour
     public TextMeshProUGUI signalmanSignal;
     public string currentSignal = "";
     public int incorrectSignals = 0;
-
-    enum SignalmanSignal
-    {
-        Left,
-        Right,
-        Back,
-        Front,
-        HoistUp,
-        HoistDown,
-    }
     public int currentSignalIndex;
     public GameObject[] targets;
 
@@ -47,6 +37,9 @@ public class SignalmanManager : MonoBehaviour
             target.SetActive(false);
         }
         targets[currentSignalIndex].SetActive(true);
+
+        // Initialize the incorrect signals count in the UI
+        UI.instance.UpdateScoreText("IncorrectSignalsText", incorrectSignals, "Incorrect Signals");
     }
 
     void Update()

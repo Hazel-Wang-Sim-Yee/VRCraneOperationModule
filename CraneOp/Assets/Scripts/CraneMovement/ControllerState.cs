@@ -1,6 +1,6 @@
 /*
     This script is used to manage the state of the controller buttons in the UI.
-    (NEED TO FIX) It changes the color of the button when it is pressed and disables other buttons to prevent multiple movements at once.
+    It changes the color of the button when it is pressed and disables other buttons to prevent multiple movements at once.
     It also listens for events that indicate movement in different directions and toggles the button state accordingly.
 */
 using UnityEngine;
@@ -75,13 +75,11 @@ public class ControllerState : MonoBehaviour
     /// </summary>
     void UpdateButtonColor()
     {
-        Button button = GetComponent<Button>();
+        Image image = GetComponent<Image>();
 
-        if (button == null)
+        if (image == null)
             return;
 
-        ColorBlock colorBlock = button.colors;
-        colorBlock.normalColor = isButtonPressed ? activeColor : inactiveColor;
-        button.colors = colorBlock;
+        image.color = isButtonPressed ? activeColor : inactiveColor;
     }
 }

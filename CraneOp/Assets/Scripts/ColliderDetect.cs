@@ -7,10 +7,11 @@ using System.Collections;
 public class ColliderDetect : MonoBehaviour
 {
     [Header("Collision Settings")]
-    int collisions = 0;
+    public int collisions = 0;
     bool ableToCollide = true;
     Coroutine collisionCoroutine; // Store the coroutine to prevent multiple coroutines from running simultaneously
     float collisionCooldown = 1f;
+
 
     void OnCollisionEnter(Collision collision)
     {
@@ -31,7 +32,6 @@ public class ColliderDetect : MonoBehaviour
     IEnumerator ResetCollision()
     {
         collisions++;
-        UI.instance.UpdateScoreText("CollisionText", collisions, "Collisions");
         ableToCollide = false;
         yield return new WaitForSeconds(collisionCooldown);
         ableToCollide = true;
@@ -74,8 +74,6 @@ public class ColliderDetect : MonoBehaviour
     {
         if (other.CompareTag("Rope") && gameObject.name == "HoistUp")
         {
-            // Ensure that the isTrigger property of the rope collider is set to true when the hoist is up to prevent physics problems.
-            other.isTrigger = true;
             CraneHoistMove craneHoistMove = GameObject.Find("hoist").GetComponent<CraneHoistMove>();
             craneHoistMove.isHoistUp = true;
         }

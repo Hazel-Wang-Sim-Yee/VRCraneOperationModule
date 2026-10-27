@@ -1,9 +1,6 @@
 /*
     This script is responsible for moving the crane hoist with its attached hook and load in the game.
     It allows the crane hoist to move up and down based on user input, while ensuring it stays aligned with the trolley's x and z position.
-    Note: To add more rope attached to the hook and trolley, re-adjust the leftAttach and rightAttach positions and add additional attach points (how many ropes you want to add)
-    and duplicate the ropeSegments' parent and reposition them accordingly. Then the 1st rope segment is attached to the attach point of the trolley, the last rope segment is attached to the character joint of the hook (add more character joints),
-    and the rest of the rope segments are attached to each other in between. If you wish to reconfigure the hook attachment, you may try to use the method of attachment as the trolley attachments.
 */
 using UnityEngine;
 using System.Collections.Generic;
@@ -45,16 +42,14 @@ public class CraneHoistMove : MonoBehaviour
         leftAttachOffset = leftAttachRb.transform.position - trolley.position;
         rightAttachOffset = rightAttachRb.transform.position - trolley.position;
     }
-    void LateUpdate()
+    void Update()
     {
         // Ensure the crane hoist stays at the same x and z position as the trolley
         Vector3 position = transform.position;
-        position.z = trolley.position.z;
-        position.x = trolley.position.x;
-        transform.position = position;
         Vector3 loadPos = loadPosition.position;
-        loadPos.z = trolley.position.z;
-        loadPos.x = trolley.position.x;
+        position.z = loadPos.z = trolley.position.z;
+        position.x = loadPos.x = trolley.position.x;
+        transform.position = position;
         loadPosition.position = loadPos;
     }
     // Update is called once per frame
@@ -117,10 +112,6 @@ public class CraneHoistMove : MonoBehaviour
         }
         // Set the target position to the calculated destination
         targetPosition = destination;
-        foreach (Collider ropeCollider in ropeColliders)
-        {
-            ropeCollider.isTrigger = true;
-        }
         isMoving = true;
     }
     public void HoistUp()
@@ -150,12 +141,5 @@ public class CraneHoistMove : MonoBehaviour
     void StopMovement()
     {
         isMoving = false;
-        /*if (!isHoistUp)
-        {
-            foreach (Collider ropeCollider in ropeColliders)
-            {
-                ropeCollider.isTrigger = false;
-            }
-        }*/
     }
 }
