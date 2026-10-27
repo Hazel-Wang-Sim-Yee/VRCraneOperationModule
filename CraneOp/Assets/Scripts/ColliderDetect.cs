@@ -31,6 +31,7 @@ public class ColliderDetect : MonoBehaviour
     IEnumerator ResetCollision()
     {
         collisions++;
+        UI.instance.UpdateScoreText("CollisionText", collisions, "Collisions");
         ableToCollide = false;
         yield return new WaitForSeconds(collisionCooldown);
         ableToCollide = true;

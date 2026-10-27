@@ -53,6 +53,7 @@ public class SignalmanManager : MonoBehaviour
     {
         // Update the signalman signal text in the UI
         FindSignalDirection();
+        UI.instance.UpdateScoreText("IncorrectSignalsText", incorrectSignals, "Incorrect Signals");
     }
 
     /// <summary>
@@ -63,11 +64,7 @@ public class SignalmanManager : MonoBehaviour
         currentSignalIndex++;
         if (currentSignalIndex >= targets.Length)
         {
-            UI ui = FindObjectOfType<UI>();
-            if (ui != null)
-            {
-                ui.UpdateFeedbackText("All target areas completed!");
-            }
+            UI.instance.UpdateFeedbackText("All target areas completed!");
             return;
         }
         foreach (GameObject target in targets)
@@ -85,26 +82,47 @@ public class SignalmanManager : MonoBehaviour
         if (currentSignalIndex >= targets.Length)
         return;
 
-        // Get the current position of the crane and the target area
-        Vector3 loadPosition = GameObject.Find("load").transform.position;
+        Vector3 loadPosition = GameObject.Find("loadPos").transform.position;
         Vector3 targetPosition = targets[currentSignalIndex].transform.position;
 
-        // Calculate the difference in position between the crane and the target area
         float xDifference = targetPosition.x - loadPosition.x;
         float zDifference = targetPosition.z - loadPosition.z;
         float yDifference = targetPosition.y - loadPosition.y;
 
-        if (Mathf.Abs(xDifference) > Mathf.Abs(zDifference))
+        float horizontalTolerance = 0.5f;
+        float verticalTolerance = 0.5f;
+
+        // Check whether the load is aligned horizontally.
+        bool xAligned = Mathf.Abs(xDifference) <= horizontalTolerance;
+        bool zAligned = Mathf.Abs(zDifference) <= horizontalTolerance;
+
+        if (!xAligned || !zAligned)
         {
-            currentSignal = xDifference > 0 ? "Right" : "Left";
+            // Move along whichever horizontal axis still needs more adjustment.
+            if (xAligned)
+            {
+                currentSignal = zDifference > 0 ? "Front" : "Back";
+            }
+            else if (zAligned)
+            {
+                currentSignal = xDifference > 0 ? "Right" : "Left";
+            }
+            else if (Mathf.Abs(xDifference) > Mathf.Abs(zDifference))
+            {
+                currentSignal = xDifference > 0 ? "Right" : "Left";
+            }
+            else
+            {
+                currentSignal = zDifference > 0 ? "Front" : "Back";
+            }
         }
-        else if (Mathf.Abs(yDifference) > Mathf.Abs(zDifference))
+        else if (Mathf.Abs(yDifference) > verticalTolerance)
         {
             currentSignal = yDifference > 0 ? "Up" : "Down";
         }
         else
         {
-            currentSignal = zDifference > 0 ? "Front" : "Back";
+            currentSignal = "Complete";
         }
 
         signalmanSignal.text = currentSignal;

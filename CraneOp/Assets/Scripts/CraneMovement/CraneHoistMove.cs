@@ -13,8 +13,8 @@ public class CraneHoistMove : MonoBehaviour
 {
     public enum Direction
     {
-        HoistUp,
-        HoistDown
+        Up,
+        Down
     }
     bool isMoving = false;
     float moveSpeed = 1f;
@@ -22,6 +22,12 @@ public class CraneHoistMove : MonoBehaviour
     [SerializeField] Transform trolley;
     [SerializeField] Collider[] ropeColliders;
     public bool isHoistUp = false;
+    [SerializeField] Rigidbody leftAttachRb;
+    [SerializeField] Rigidbody rightAttachRb;
+    Vector3 leftAttachOffset;
+    Vector3 rightAttachOffset;
+
+    [SerializeField] Transform loadPosition;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -33,6 +39,11 @@ public class CraneHoistMove : MonoBehaviour
         position.x = trolley.position.x;
         position.z = trolley.position.z;
         transform.position = position;
+        Vector3 loadPos = loadPosition.position;
+        loadPos.y = GameObject.Find("load").transform.position.y;
+        loadPosition.position = loadPos;
+        leftAttachOffset = leftAttachRb.transform.position - trolley.position;
+        rightAttachOffset = rightAttachRb.transform.position - trolley.position;
     }
     void LateUpdate()
     {
@@ -41,29 +52,43 @@ public class CraneHoistMove : MonoBehaviour
         position.z = trolley.position.z;
         position.x = trolley.position.x;
         transform.position = position;
+        Vector3 loadPos = loadPosition.position;
+        loadPos.z = trolley.position.z;
+        loadPos.x = trolley.position.x;
+        loadPosition.position = loadPos;
     }
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
-        if (!isMoving)
-            return;
-        // If the crane hoist is moving, move it towards the target position
-        transform.position = Vector3.MoveTowards(
-            transform.position,
-            targetPosition,
-            moveSpeed * Time.deltaTime
-        );
+        Vector3 nextPosition = transform.position;
 
-        if (transform.position == targetPosition)
+        if (isMoving)
         {
-            UI ui = FindObjectOfType<UI>();
-            if (ui != null)
-            {
-                if (isHoistUp)
-                    ui.UpdateFeedbackText("Hoist is at its minimum length.");
-                else
-                    ui.UpdateFeedbackText("Hoist is at its maximum length.");
-            }
+            nextPosition = Vector3.MoveTowards(
+                transform.position,
+                targetPosition,
+                moveSpeed * Time.fixedDeltaTime
+            );
+
+            transform.position = nextPosition;
+        }
+
+        // Keep both attachment points aligned with the hoist,
+        // including when the trolley moves horizontally.
+        leftAttachRb.MovePosition(nextPosition + leftAttachOffset);
+        rightAttachRb.MovePosition(nextPosition + rightAttachOffset);
+
+        if (isMoving &&
+            Vector3.Distance(nextPosition, targetPosition) < 0.001f)
+        {
+            transform.position = targetPosition;
+
+            UI.instance.UpdateFeedbackText(
+                    isHoistUp
+                        ? "Hoist is at its minimum length."
+                        : "Hoist is at its maximum length."
+                );
+
             StopMovement();
         }
     }
@@ -75,18 +100,18 @@ public class CraneHoistMove : MonoBehaviour
         // Check the direction the crane hoist wants to move and set the destination accordingly
         switch (direction)
         {
-            case Direction.HoistUp:
+            case Direction.Up:
                 destination.y = GameObject.Find("HoistUp").transform.position.y;
                 isHoistUp = true;
                 break;
 
-            case Direction.HoistDown:
+            case Direction.Down:
                 destination.y = GameObject.Find("HoistDown").transform.position.y;
                 isHoistUp = false;
                 break;
         }
 
-        if (SignalmanManager.instance.currentSignal != Direction.HoistUp.ToString())
+        if (SignalmanManager.instance.currentSignal != direction.ToString())
         {
             SignalmanManager.instance.incorrectSignals++;
         }
@@ -100,11 +125,11 @@ public class CraneHoistMove : MonoBehaviour
     }
     public void HoistUp()
     {
-        MoveToTarget(Direction.HoistUp);
+        MoveToTarget(Direction.Up);
         // Prevent the incorrect signal count from counting twice when the button is pressed and released
         if (GameObject.Find("Up").GetComponent<ControllerState>().isButtonPressed == true)
         {
-            if (SignalmanManager.instance.currentSignal != Direction.HoistUp.ToString())
+            if (SignalmanManager.instance.currentSignal != Direction.Up.ToString())
             {
                 SignalmanManager.instance.incorrectSignals--;
             }
@@ -112,11 +137,11 @@ public class CraneHoistMove : MonoBehaviour
     }
     public void HoistDown()
     {
-        MoveToTarget(Direction.HoistDown);
+        MoveToTarget(Direction.Down);
         // Prevent the incorrect signal count from counting twice when the button is pressed and released
         if (GameObject.Find("Down").GetComponent<ControllerState>().isButtonPressed == true)
         {
-            if (SignalmanManager.instance.currentSignal != Direction.HoistDown.ToString())
+            if (SignalmanManager.instance.currentSignal != Direction.Down.ToString())
             {
                 SignalmanManager.instance.incorrectSignals--;
             }
@@ -125,12 +150,12 @@ public class CraneHoistMove : MonoBehaviour
     void StopMovement()
     {
         isMoving = false;
-        if (!isHoistUp)
+        /*if (!isHoistUp)
         {
             foreach (Collider ropeCollider in ropeColliders)
             {
                 ropeCollider.isTrigger = false;
             }
-        }
+        }*/
     }
 }

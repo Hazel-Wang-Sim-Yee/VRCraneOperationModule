@@ -36,11 +36,7 @@ public class CraneMove : MonoBehaviour
         if (transform.position == targetPosition)
         {
             isMoving = false;
-            UI ui = FindObjectOfType<UI>();
-            if (ui != null)
-            {
-                ui.UpdateFeedbackText("Crane can't move further.");
-            }
+            UI.instance.UpdateFeedbackText("Crane can't move further.");
         }
     }
 

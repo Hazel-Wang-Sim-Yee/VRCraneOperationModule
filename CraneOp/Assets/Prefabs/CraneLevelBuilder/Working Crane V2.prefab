@@ -303,11 +303,11 @@ Transform:
   m_GameObject: {fileID: 2475370904827116421}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -1.57634, y: 2.38238, z: 0.7680001}
-  m_LocalScale: {x: 0.19999999, y: 0.5, z: 0.5}
+  m_LocalPosition: {x: -1.5763397, y: 2.3823798, z: 0.7680001}
+  m_LocalScale: {x: 0.19999997, y: 0.5, z: 0.5}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 5070887656472773735}
+  m_Father: {fileID: 167313072644036660}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &3571179752111056439
 MeshFilter:
@@ -1597,11 +1597,11 @@ Transform:
   m_GameObject: {fileID: 7001828408219844016}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -1.57634, y: 2.38238, z: 1.2490001}
-  m_LocalScale: {x: 0.19999999, y: 0.5, z: 0.5}
+  m_LocalPosition: {x: -1.5763397, y: 2.3823798, z: 1.2490001}
+  m_LocalScale: {x: 0.19999997, y: 0.5, z: 0.5}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 5070887656472773735}
+  m_Father: {fileID: 167313072644036660}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &4453849471812614475
 MeshFilter:
@@ -1742,6 +1742,8 @@ Transform:
   - {fileID: 2129986413868372846}
   - {fileID: 3586833321566952149}
   - {fileID: 3832953788110723045}
+  - {fileID: 6336741020754006171}
+  - {fileID: 5991472227904714261}
   - {fileID: 1546483663742665997}
   - {fileID: 5532187623793213226}
   m_Father: {fileID: 0}
@@ -2074,9 +2076,7 @@ Transform:
   m_LocalPosition: {x: 7.8817005, y: -4.76476, z: -1.0099998}
   m_LocalScale: {x: 5, y: 2, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 6336741020754006171}
-  - {fileID: 5991472227904714261}
+  m_Children: []
   m_Father: {fileID: 3832953788110723045}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &2691098713290895375
@@ -2102,6 +2102,8 @@ MonoBehaviour:
   - {fileID: 2138471160944417847}
   - {fileID: 4547422505649081721}
   isHoistUp: 0
+  leftAttachRb: {fileID: 0}
+  rightAttachRb: {fileID: 0}
 --- !u!1 &8069532402888007947
 GameObject:
   m_ObjectHideFlags: 0
