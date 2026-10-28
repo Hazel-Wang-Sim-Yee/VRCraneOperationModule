@@ -17,6 +17,9 @@ public static Events Instance { get; private set; }
     public event Action onHoistUp;
     public event Action onHoistDown;
 
+    public event Action onLoadLoaded;
+    public event Action onLoadUnloaded;
+
     void Awake()
     {
         if (Instance != null && Instance != this)
@@ -62,5 +65,15 @@ public static Events Instance { get; private set; }
     public void HoistDown()
     {
         onHoistDown?.Invoke();
+    }
+
+    // Load Hook Events
+    public void LoadLoaded()
+    {
+        onLoadLoaded?.Invoke();
+    }
+    public void LoadUnloaded()
+    {
+        onLoadUnloaded?.Invoke();
     }
 }

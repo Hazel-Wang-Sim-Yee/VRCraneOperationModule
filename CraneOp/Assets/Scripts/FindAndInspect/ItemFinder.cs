@@ -94,8 +94,8 @@ public class ItemFinder : MonoBehaviour
             ItemFinderManager.Instance.defectImages[i].sprite = null;
         }
 
-        ItemFinderManager.Instance.UpdateChecklist(itemName);
-        GameObject.Find("UI").GetComponent<UI>().UpdateFeedbackText("Item completed: " + itemName);
+        ItemFinderManager.Instance.UpdateChecklist();
+        UI.instance.UpdateFeedbackText("Item completed: " + itemName);
         this.enabled = false;
     }
 }

@@ -13,7 +13,11 @@ public class UI : MonoBehaviour
     [SerializeField] TextMeshProUGUI feedbackText;
     Coroutine clearFeedbackCoroutine;
 
+    [SerializeField] Image controllerCanvas;
+
+    [Header("Singleton")]
     public static UI instance;
+
     void Awake()
     {
         if (instance != null && instance != this)
@@ -28,6 +32,12 @@ public class UI : MonoBehaviour
     void Start()
     {
         feedbackText.text = "";
+        if (controllerCanvas != null)
+        {
+            controllerCanvas.gameObject.SetActive(false);
+        }
+        Events.Instance.onLoadLoaded += ActivateControllerCanvas;
+        Events.Instance.onLoadUnloaded += DeactivateControllerCanvas;
     }
 
     /// <summary>
@@ -63,5 +73,15 @@ public class UI : MonoBehaviour
     public void UpdateScoreText(string label, int score, string scoreType)
     {
         GameObject.Find(label).GetComponent<TextMeshProUGUI>().text = scoreType + ": " + score.ToString();
+    }
+
+    public void ActivateControllerCanvas()
+    {
+        controllerCanvas.gameObject.SetActive(true);
+    }
+
+    public void DeactivateControllerCanvas()
+    {
+        controllerCanvas.gameObject.SetActive(false);
     }
 }

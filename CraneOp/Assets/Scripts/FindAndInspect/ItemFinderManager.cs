@@ -14,6 +14,7 @@ public class ItemFinderManager : MonoBehaviour
     public GameObject[] itemsToFind;
     public int currentItemIndex = 0;
     public Button findButton;
+    [SerializeField] Button nextButton;
     public Image itemInspectionImage;
     public Material highlightMaterial;
     public TextMeshProUGUI itemNameText;
@@ -56,14 +57,13 @@ public class ItemFinderManager : MonoBehaviour
                 checklistItemsText[i].text = i+1 + ". " + itemsToFind[i].GetComponent<ItemFinder>().itemName;
             }
             // Enable the first item to find
-            UpdateCurrentItem();
         }
     }
 
     /// <summary>
     /// Updates the current item to find
     /// </summary>
-    void UpdateCurrentItem()
+    public void UpdateCurrentItem()
     {
         itemsToFind[currentItemIndex].GetComponent<ItemFinder>().enabled = true;
         itemsToFind[currentItemIndex].GetComponent<ItemFinder>().LoadItem();
@@ -79,7 +79,8 @@ public class ItemFinderManager : MonoBehaviour
         currentItemIndex++;
         if (currentItemIndex >= itemsToFind.Length)
         {
-            GameObject.Find("UI").GetComponent<UI>().UpdateFeedbackText("All items found!");
+            UI.instance.UpdateFeedbackText("All items found!");
+            nextButton.gameObject.SetActive(true);
             return;
         }
         UpdateCurrentItem();
@@ -88,8 +89,7 @@ public class ItemFinderManager : MonoBehaviour
     /// <summary>
     /// Updates the checklist to indicate that the item has been found
     /// </summary>
-    /// <param name="itemName"></param>
-    public void UpdateChecklist(string itemName)
+    public void UpdateChecklist()
     {
         checklistItemsText[currentItemIndex].text = "<s>" + checklistItemsText[currentItemIndex].text + "</s>";
     }
