@@ -12,6 +12,8 @@ public class ColliderDetect : MonoBehaviour
     Coroutine collisionCoroutine; // Store the coroutine to prevent multiple coroutines from running simultaneously
     float collisionCooldown = 1f;
 
+    [Header("Script References")]
+    [SerializeField] private CraneSequence craneSequence;
 
     void OnCollisionEnter(Collision collision)
     {
@@ -42,7 +44,10 @@ public class ColliderDetect : MonoBehaviour
     {
         if (other.CompareTag("Load") && CompareTag("CraneDestination"))
         {
-            SignalmanManager.instance.NextArea();
+            if (craneSequence.changedTarget == true)
+            {
+                craneSequence.changedTarget = false;
+            }
         }
         else if (other.CompareTag("Crane"))
         {
@@ -68,6 +73,14 @@ public class ColliderDetect : MonoBehaviour
             ropeRenderer.enabled = true;
             ropeChildRenderer.enabled = true;
         }
+        if (other.CompareTag("Load") && CompareTag("CraneDestination"))
+        {
+            // Reset the changedTarget flag in the CraneSequence script when the load exits the crane destination trigger.
+            if (craneSequence.changedTarget == true)
+            {
+                craneSequence.changedTarget = false;
+            }
+        }
     }
 
     void OnTriggerStay(Collider other)
@@ -76,6 +89,15 @@ public class ColliderDetect : MonoBehaviour
         {
             CraneHoistMove craneHoistMove = GameObject.Find("hoist").GetComponent<CraneHoistMove>();
             craneHoistMove.isHoistUp = true;
+        }
+        if (other.CompareTag("Load")&& CompareTag("CraneDestination"))
+        {
+            // Check if the crane is moving or not and if its not moving, check if the target has already been changed. If not, change the target to the next area.
+            if (craneSequence.isCraneMoving == false && craneSequence.changedTarget == false)
+            {
+                craneSequence.changedTarget = true;
+                SignalmanManager.instance.NextArea();
+            }
         }
     }
 }

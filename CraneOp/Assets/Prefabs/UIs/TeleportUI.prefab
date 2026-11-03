@@ -899,6 +899,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2dcdabd79c6962d498df66900ff24b5c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Interactor
+  moduleButtonTexts:
+  - {fileID: 346088597174914552}
+  - {fileID: 9133885935589294062}
 --- !u!114 &4084262783242932965
 MonoBehaviour:
   m_ObjectHideFlags: 0

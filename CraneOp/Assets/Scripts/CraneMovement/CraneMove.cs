@@ -4,6 +4,8 @@
 */
 using UnityEngine;
 
+// Runs before CraneObjectMove and CraneHoistMove each physics step, so everything below it follows without lag.
+[DefaultExecutionOrder(-20)]
 public class CraneMove : MonoBehaviour
 {
     public enum Direction
@@ -22,7 +24,8 @@ public class CraneMove : MonoBehaviour
         Events.Instance.onMoveFront += MoveFront;
         Events.Instance.onStopMovement += StopMovement;
     }
-    void Update()
+
+    void FixedUpdate()
     {
         if (!isMoving)
             return;
@@ -30,7 +33,7 @@ public class CraneMove : MonoBehaviour
         transform.position = Vector3.MoveTowards(
             transform.position,
             targetPosition,
-            moveSpeed * Time.deltaTime
+            moveSpeed * Time.fixedDeltaTime
         );
 
         if (transform.position == targetPosition)

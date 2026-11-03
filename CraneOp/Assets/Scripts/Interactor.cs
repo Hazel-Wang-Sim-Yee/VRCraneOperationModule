@@ -5,10 +5,34 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Collections;
+using UnityEngine.UI;
+using TMPro;
 
 public class Interactor : MonoBehaviour
 {
     Coroutine loadingCoroutine;
+
+    [Header("Module Selection Buttons")]
+    [SerializeField] TextMeshProUGUI[] moduleButtonTexts; // Array to hold the TextMeshProUGUI components of the module selection buttons
+
+    void Start()
+    {
+        // Initialize the module selection buttons with the names of the modules in the build settings
+        for (int i = 0; i < moduleButtonTexts.Length; i++)
+        {
+            if (i < SceneManager.sceneCountInBuildSettings)
+            {
+                string scenePath = SceneUtility.GetScenePathByBuildIndex(i);
+                string sceneName = System.IO.Path.GetFileNameWithoutExtension(scenePath);
+                moduleButtonTexts[i].text = $"Module {i+1}: {sceneName}"; // Set the button text to the module name
+            }
+            else
+            {
+                moduleButtonTexts[i].text = "N/A"; // If there are more buttons than modules, set the text to "N/A"
+                Debug.LogWarning($"No module found for button index {i}. Please check the build settings.");
+            }
+        }
+    }
 
     /// <summary>
     /// Handles the module selection based on the provided module index.

@@ -13,9 +13,13 @@ public class ControllerState : MonoBehaviour
     public bool isButtonPressed = false;
     private string buttonName;
     [SerializeField] Button[] otherButtons;
+    CraneSequence craneSequence;
+    CraneHoistMove craneHoistMove;
 
     void Start()
     {
+        craneSequence = FindObjectOfType<CraneSequence>();
+        craneHoistMove = FindObjectOfType<CraneHoistMove>();
         buttonName = gameObject.name;
         if (buttonName == "Left")
         {
@@ -40,9 +44,12 @@ public class ControllerState : MonoBehaviour
         else if (buttonName == "Down")
         {
             Events.Instance.onHoistDown += ToggleButtonState;
+        } else
+        {
+            Debug.LogWarning("Button name does not match any expected values: " + buttonName);
         }
     }
-
+    
     /// <summary>
     /// Toggles the state of the button when it is pressed.
     /// If the button is pressed, it disables other buttons to prevent multiple movements at once.
@@ -51,19 +58,10 @@ public class ControllerState : MonoBehaviour
     public void ToggleButtonState()
     {
         isButtonPressed = !isButtonPressed;
+        craneSequence.ActivateButtons(craneHoistMove.isMoving); // Disable movement buttons when hoisting and enable hoist buttons, and vice versa
         if (isButtonPressed == false)
         {
-            foreach (Button button in otherButtons)
-            {
-                button.interactable = true;
-            }
             Events.Instance.StopMovement();
-        } else if (isButtonPressed == true)
-        {
-            foreach (Button button in otherButtons)
-            {
-                button.interactable = false;
-            }
         }
         UpdateButtonColor();
     }

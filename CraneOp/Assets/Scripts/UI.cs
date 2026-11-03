@@ -13,7 +13,8 @@ public class UI : MonoBehaviour
     [SerializeField] TextMeshProUGUI feedbackText;
     Coroutine clearFeedbackCoroutine;
 
-    [SerializeField] Image controllerCanvas;
+    [Header("Controller Canvas")]
+    public Image controllerCanvas;
 
     [Header("Singleton")]
     public static UI instance;
@@ -32,9 +33,9 @@ public class UI : MonoBehaviour
     void Start()
     {
         feedbackText.text = "";
-        if (controllerCanvas != null)
+        if (controllerCanvas == null)
         {
-            controllerCanvas.gameObject.SetActive(false);
+            Debug.LogError("Ensure that the Controller Canvas is assigned if in crane modules.");
         }
         Events.Instance.onLoadLoaded += ActivateControllerCanvas;
         Events.Instance.onLoadUnloaded += DeactivateControllerCanvas;
@@ -56,7 +57,7 @@ public class UI : MonoBehaviour
     /// </summary>
     /// <param name="delay"></param>
     /// <returns></returns>
-    IEnumerator ClearFeedbackTextAfterDelay(float delay)
+    public IEnumerator ClearFeedbackTextAfterDelay(float delay)
     {
         yield return new WaitForSeconds(delay);
         feedbackText.text = "";

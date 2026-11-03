@@ -7,18 +7,26 @@ using UnityEngine;
 public class CollisionManager : MonoBehaviour
 {
     int totalCollisions;
-    [SerializeField] GameObject[] collisionObjects;
+    public GameObject[] collisionObjects;
     void Start()
     {
         // Find all objects with the "CollisionObject" tag and store them in the collisionObjects array
         collisionObjects = GameObject.FindGameObjectsWithTag("CollisionObject");
         totalCollisions = 0;
+        foreach(GameObject obj in collisionObjects)
+        {
+            ColliderDetect colliderDetect = obj.GetComponent<ColliderDetect>();
+            if (colliderDetect != null)
+            {
+                colliderDetect.enabled = false; // Disable the ColliderDetect script on each collision object to prevent it from counting collisions before the load is attached.
+            }
+        }
+        this.enabled = false; // Disable the script after initialization to prevent unnecessary updates
     }
     void FixedUpdate()
     {
         CalculateTotalCollisions();
     }
-
     
     void CalculateTotalCollisions()
     {

@@ -1,9 +1,13 @@
 /*
-    This script is responsible for moving the crane objects (hook, load, etc.) in the game.
+    This script is responsible for moving the crane objects (trolley etc.) in the game.
     It allows the crane objects to move left and right based on user input, while ensuring they stay aligned with the crane's z position.
+    NOTE: put this on the trolley / non-physics crane parts only. Never on the hook or the load:
+    those are dynamic Rigidbodies and must only be moved by their joints.
 */
 using UnityEngine;
 
+// Runs after CraneMove and before CraneHoistMove each physics step.
+[DefaultExecutionOrder(-10)]
 public class CraneObjectMove : MonoBehaviour
 {
     public enum Direction
@@ -16,17 +20,21 @@ public class CraneObjectMove : MonoBehaviour
 
     public float moveSpeed = 1f;
 
+    Transform crane;
+
     void Start()
     {
+        crane = GameObject.Find("crane").transform;
         Events.Instance.onMoveLeft += MoveLeft;
         Events.Instance.onMoveRight += MoveRight;
         Events.Instance.onStopMovement += StopMovement;
     }
-    void Update()
+
+    void FixedUpdate()
     {
         // Ensure the crane objects stay at the same z position as the crane
         Vector3 position = transform.position;
-        position.z = GameObject.Find("crane").transform.position.z;
+        position.z = crane.position.z;
         transform.position = position;
         if (!isMoving)
             return;
@@ -34,7 +42,7 @@ public class CraneObjectMove : MonoBehaviour
         transform.position = Vector3.MoveTowards(
             transform.position,
             targetPosition,
-            moveSpeed * Time.deltaTime
+            moveSpeed * Time.fixedDeltaTime
         );
 
         if (transform.position == targetPosition)

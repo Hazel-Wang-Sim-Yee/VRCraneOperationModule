@@ -2031,7 +2031,7 @@ GameObject:
   m_Component:
   - component: {fileID: 167313072644036660}
   m_Layer: 0
-  m_Name: Working Crane V2
+  m_Name: Joints Rope Crane
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
