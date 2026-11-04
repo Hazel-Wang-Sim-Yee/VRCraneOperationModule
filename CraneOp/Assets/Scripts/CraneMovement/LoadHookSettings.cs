@@ -12,7 +12,7 @@ public class LoadHookSettings : MonoBehaviour
     [Header("References (auto-found by name if left empty)")]
     [SerializeField] Rigidbody hookBody;   // the HOOK's Rigidbody, not the socket's
     [SerializeField] Transform loadPos;
-    [SerializeField] GameObject load;
+    public GameObject load;
     [Tooltip("Parent of the hook, socket and all rope segments. Their colliders are ignored by the load while attached.")]
     [SerializeField] Transform craneRoot;
 
@@ -36,8 +36,18 @@ public class LoadHookSettings : MonoBehaviour
 
     CollisionManager collisionManager;
 
+    public static LoadHookSettings instance;
+
     void Awake()
     {
+        if (instance != null && instance != this)
+        {
+            Destroy(this);
+        }
+        else
+        {
+            instance = this;
+        }
         // Get the hookBody from the socket parent (hook) rigidbody if not set in the inspector.
         if (hookBody == null) hookBody = GetComponentInParent<Rigidbody>();
         if (hookBody == null) Debug.LogError("No Rigidbody found on the hook (parent of the socket).", this);
@@ -172,7 +182,7 @@ public class LoadHookSettings : MonoBehaviour
                 colliderDetect.enabled = true; // Enable the ColliderDetect script on each collision object to allow it to count collisions while the load is attached.
             }
         }
-        SignalmanManager.instance.targets[SignalmanManager.instance.currentSignalIndex].SetActive(true); // Activate the current target area for the signalman to guide the crane operator.
+
         Events.Instance.LoadLoaded();
     }
 
@@ -208,8 +218,9 @@ public class LoadHookSettings : MonoBehaviour
                 colliderDetect.enabled = false; // Disable the ColliderDetect script on each collision object to prevent it from counting collisions after the load is detached.
             }
         }
+
         collisionManager.enabled = false; // Disable the CollisionManager script to prevent collisions detection after the load is detached.
-        SignalmanManager.instance.targets[SignalmanManager.instance.currentSignalIndex].SetActive(false); // Deactivate the current target area for the signalman since the load has been unloaded.
+
         Events.Instance.LoadUnloaded();
     }
 

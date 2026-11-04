@@ -9,6 +9,7 @@ public class Events : MonoBehaviour
 {
 public static Events Instance { get; private set; }
 
+    // Crane Movement Events
     public event Action onMoveLeft;
     public event Action onMoveRight;
     public event Action onMoveFront;
@@ -17,8 +18,12 @@ public static Events Instance { get; private set; }
     public event Action onHoistUp;
     public event Action onHoistDown;
 
+    // Load Events
     public event Action onLoadLoaded;
     public event Action onLoadUnloaded;
+
+    // Sequence Events
+    public event Action onSequenceComplete;
 
     void Awake()
     {
@@ -67,13 +72,20 @@ public static Events Instance { get; private set; }
         onHoistDown?.Invoke();
     }
 
-    // Load Hook Events
+    // Load Events
     public void LoadLoaded()
     {
         onLoadLoaded?.Invoke();
     }
+
     public void LoadUnloaded()
     {
         onLoadUnloaded?.Invoke();
+    }
+
+    // Sequence Events
+    public void SequenceComplete()
+    {
+        onSequenceComplete?.Invoke();
     }
 }

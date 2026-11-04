@@ -5,6 +5,8 @@
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
+using System.Collections.Generic;
+using System.Collections;
 
 public class SignalmanManager : MonoBehaviour
 {
@@ -37,7 +39,15 @@ public class SignalmanManager : MonoBehaviour
 
     void Start()
     {
+        Events.Instance.onLoadLoaded += () => {isLoadAttached = true; ShowTarget(true);};
+        Events.Instance.onLoadUnloaded += () => {isLoadAttached = false; ShowTarget(false);};
+        
         craneSequence = FindObjectOfType<CraneSequence>();
+        if (craneSequence == null)
+        {
+            Debug.LogError("CraneSequence script not found in the scene. Please ensure it is attached to a GameObject.");
+        }
+
         // Initialize the signalman signal to the first target area
         currentSignalIndex = 0;
 
@@ -49,6 +59,7 @@ public class SignalmanManager : MonoBehaviour
         }
         foreach (GameObject target in targets)
         {
+            target.GetComponent<Collider>().enabled = false; // Disable the colliders for all target areas initially
             target.SetActive(false);
         }
 
@@ -80,14 +91,22 @@ public class SignalmanManager : MonoBehaviour
         currentSignalIndex++;
         if (currentSignalIndex >= targets.Length)
         {
-            UI.instance.ClearFeedbackTextAfterDelay(0.1f);
             UI.instance.UpdateFeedbackText("All target areas completed!");
+            StartCoroutine(DelayToNextModule(3f));
+
+            // Unsubscribe from events as the sequence is complete
+            Events.Instance.onLoadLoaded -= () => {isLoadAttached = true; ShowTarget(true);};
+            Events.Instance.onLoadUnloaded -= () => {isLoadAttached = false; ShowTarget(false);};
+
+            targets[currentSignalIndex - 1].SetActive(false); // Hide the last target area
+
             return;
         }
         foreach (GameObject target in targets)
         {
             target.SetActive(false);
         }
+        targets[currentSignalIndex].GetComponent<Collider>().enabled = true; // Enable the collider for the current target area
         targets[currentSignalIndex].SetActive(true);
     }
 
@@ -135,5 +154,25 @@ public class SignalmanManager : MonoBehaviour
         }
 
         signalmanSignal.text = currentSignal;
+    }
+
+    void ShowTarget(bool show)
+    {
+        if (currentSignalIndex < targets.Length)
+        {
+            targets[currentSignalIndex].GetComponent<Collider>().enabled = show;
+            targets[currentSignalIndex].SetActive(show);
+        }
+    }
+
+    /// <summary>
+    /// Delays the transition to the next module after a specified delay to ensure that the final feedback text is visible to the user.
+    /// </summary>
+    /// <param name="delay"></param>
+    /// <returns></returns>
+    IEnumerator DelayToNextModule(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        Events.Instance.SequenceComplete();
     }
 }

@@ -17,6 +17,7 @@ public class Interactor : MonoBehaviour
 
     void Start()
     {
+        Events.Instance.onSequenceComplete += LoadNextModule; // Subscribe to the sequence complete event to load the next module
         // Initialize the module selection buttons with the names of the modules in the build settings
         for (int i = 0; i < moduleButtonTexts.Length; i++)
         {
@@ -53,7 +54,7 @@ public class Interactor : MonoBehaviour
             {
                 StopCoroutine(loadingCoroutine);
             }
-            loadingCoroutine = StartCoroutine(loadingCoroutineMethod(moduleIndex));
+            loadingCoroutine = StartCoroutine(loadingCoroutineMethod(moduleIndex, 3)); // Start the coroutine to load the new scene with a 3-second delay
         }
         else
         {
@@ -63,7 +64,7 @@ public class Interactor : MonoBehaviour
 
     /// <summary>
     /// Loads the next module in the build settings if available.
-    /// If there are no more modules to load, it provides feedback to the user.
+    /// If there are no more modules to load, it will return to the first module and provide feedback to the player.
     /// </summary>
     public void LoadNextModule()
     {
@@ -74,7 +75,8 @@ public class Interactor : MonoBehaviour
         }
         else
         {
-            UI.instance.UpdateFeedbackText("No more modules to load.");
+            UI.instance.UpdateFeedbackText("No more modules to load. Returning to the first module.");
+            ModuleSelection(0);
         }
     }
 
@@ -83,7 +85,7 @@ public class Interactor : MonoBehaviour
     /// </summary>
     /// <param name="moduleIndex"></param>
     /// <returns></returns>
-    IEnumerator loadingCoroutineMethod(int moduleIndex)
+    IEnumerator loadingCoroutineMethod(int moduleIndex, int delay)
     {
         string scenePath = SceneUtility.GetScenePathByBuildIndex(moduleIndex);
         string sceneName = System.IO.Path.GetFileNameWithoutExtension(scenePath);
@@ -93,7 +95,7 @@ public class Interactor : MonoBehaviour
             yield break;
         }
         UI.instance.UpdateFeedbackText("Loading module: " + sceneName);
-        yield return new WaitForSeconds(1f); // Wait for 1 second before loading the scene
+        yield return new WaitForSeconds(delay); // Wait for the specified delay before loading the scene
         SceneManager.LoadScene(moduleIndex);
     }
 }

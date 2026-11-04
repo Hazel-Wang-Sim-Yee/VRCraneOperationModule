@@ -4,7 +4,8 @@
     Put this on the root of any liftable load (regular or irregular). Needs a Rigidbody on the same object.
     Colliders can be on this object or on its children (compound collider for irregular shapes).
     Created by: Claude
-    NOTE: This script is not in used in the current version of the game, but it is kept for future reference or potential use.
+    NOTE: Only line renderer functionality is currently implemented.
+    Other features like mass and center of mass configuration are present but not used in the current game logic.
 */
 using UnityEngine;
 
@@ -25,11 +26,51 @@ public class CraneLoad : MonoBehaviour
     public Transform LiftingPoint => liftingPoint != null ? liftingPoint : transform;
     public bool HasLiftingPoint => liftingPoint != null;
 
+    [Header("Line Renderer (auto found if left empty)")]
+    [SerializeField] LineRenderer lineRenderer;
+    bool drawLine = false; // Flag to indicate whether to draw the line to the target area
+
     void Awake()
     {
         Body = GetComponent<Rigidbody>();
         Body.mass = mass;
         if (overrideCenterOfMass) Body.centerOfMass = localCenterOfMass;
+    }
+    void Start()
+    {
+        Events.Instance.onLoadLoaded += StartDrawing;
+        Events.Instance.onLoadUnloaded += StopDrawing;
+        if (lineRenderer == null)
+        {
+            lineRenderer = GetComponent<LineRenderer>();
+            if (lineRenderer == null)
+            {
+                Debug.LogWarning("LineRenderer component not found on the load. Please add a LineRenderer component to visualize the line to the target.");
+            }
+        }
+    }
+
+    void Update()
+    {
+        if (LoadHookSettings.instance.load == this.gameObject)
+        {
+            if (SignalmanManager.instance.currentSignalIndex < SignalmanManager.instance.targets.Length)
+            {
+                if (drawLine && lineRenderer != null)
+                {
+                    DrawLineToTarget(SignalmanManager.instance.targets[SignalmanManager.instance.currentSignalIndex].transform.position);
+                } else if (!drawLine && lineRenderer != null)
+                {
+                    lineRenderer.positionCount = 0; // Clear the line when not drawing
+                }
+            } else 
+            {
+                if (lineRenderer != null)
+                {
+                    lineRenderer.positionCount = 0; // Load reached the last target, clear the line
+                }
+            }
+        }
     }
 
     // Right-click the component header > "Place lifting point above centre of mass".
@@ -75,5 +116,28 @@ public class CraneLoad : MonoBehaviour
         Gizmos.DrawWireSphere(com, 0.06f);
         Gizmos.color = Color.white;
         Gizmos.DrawLine(eye, com);
+    }
+
+    /// <summary>
+    /// Draws a line from the load's position to the specified target position using the LineRenderer component.
+    /// This helps the player to see the direction to the target area.
+    /// </summary>
+    /// <param name="target"></param>
+    public void DrawLineToTarget(Vector3 target)
+    {
+        if (lineRenderer == null) return;
+        lineRenderer.positionCount = 2;
+        lineRenderer.SetPosition(0, transform.position);
+        lineRenderer.SetPosition(1, target);
+    }
+
+    void StartDrawing()
+    {
+        drawLine = true;
+    }
+
+    void StopDrawing()
+    {
+        drawLine = false;
     }
 }

@@ -15,6 +15,30 @@ public class ColliderDetect : MonoBehaviour
     [Header("Script References")]
     [SerializeField] private CraneSequence craneSequence;
 
+    [Header("Colour Settings")]
+    [SerializeField] private Material insideColor;
+    [SerializeField] private Material outsideColor;
+    
+    void Start()
+    {
+        if (craneSequence == null)
+        {
+            craneSequence = FindObjectOfType<CraneSequence>();
+            if (craneSequence == null)
+            {
+                Debug.LogError("CraneSequence script not found in the scene. Please ensure it is attached to a GameObject.");
+            }
+        }
+        if (insideColor == null)
+        {
+            Debug.LogWarning("Inside color not assigned. Please assign a material in the inspector if needed.");
+        }
+        if (outsideColor == null)
+        {
+            Debug.LogWarning("Outside color not assigned. Please assign a material in the inspector if needed.");
+        }
+    }
+
     void OnCollisionEnter(Collision collision)
     {
         if (collision.gameObject.CompareTag("Load"))
@@ -44,6 +68,8 @@ public class ColliderDetect : MonoBehaviour
     {
         if (other.CompareTag("Load") && CompareTag("CraneDestination"))
         {
+            // Indicate that the load is in position and change the color of the crane destination to green.
+            gameObject.GetComponent<MeshRenderer>().material = insideColor;
             if (craneSequence.changedTarget == true)
             {
                 craneSequence.changedTarget = false;
@@ -75,6 +101,7 @@ public class ColliderDetect : MonoBehaviour
         }
         if (other.CompareTag("Load") && CompareTag("CraneDestination"))
         {
+            gameObject.GetComponent<MeshRenderer>().material = outsideColor;
             // Reset the changedTarget flag in the CraneSequence script when the load exits the crane destination trigger.
             if (craneSequence.changedTarget == true)
             {
@@ -92,6 +119,7 @@ public class ColliderDetect : MonoBehaviour
         }
         if (other.CompareTag("Load")&& CompareTag("CraneDestination"))
         {
+            gameObject.GetComponent<MeshRenderer>().material = insideColor;
             // Check if the crane is moving or not and if its not moving, check if the target has already been changed. If not, change the target to the next area.
             if (craneSequence.isCraneMoving == false && craneSequence.changedTarget == false)
             {

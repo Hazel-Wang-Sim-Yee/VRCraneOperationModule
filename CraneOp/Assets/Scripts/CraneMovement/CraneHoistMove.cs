@@ -47,11 +47,6 @@ public class CraneHoistMove : MonoBehaviour
         position.z = trolley.position.z;
         transform.position = position;
         Vector3 loadPos = loadPosition.position;
-        if (GameObject.Find("load") != null)
-            loadPos.y = GameObject.Find("load").transform.position.y;
-        else
-            loadPos.y = 0.5f;
-        loadPosition.position = loadPos;
 
         /* Adding more attachment points
         [attachName]Offset = [attachName]Rb.position - transform.position;
@@ -106,12 +101,11 @@ public class CraneHoistMove : MonoBehaviour
 
         if (arrived)
         {
-            UI.instance.UpdateFeedbackText(
-                    isHoistUp
-                        ? "Hoist is at its minimum length."
-                        : "Hoist is at its maximum length."
-                );
-
+            // If crane reached last target area, do not display feedback text for hoist up or down.
+            if (SignalmanManager.instance.currentSignalIndex < SignalmanManager.instance.targets.Length -1)
+            {
+                UI.instance.UpdateFeedbackText(isHoistUp ? "Hoist is at its minimum length." : "Hoist is at its maximum height.");
+            }
             StopMovement();
         }
     }
@@ -170,4 +164,5 @@ public class CraneHoistMove : MonoBehaviour
     {
         isMoving = false;
     }
+
 }

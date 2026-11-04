@@ -5,11 +5,14 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using System.Collections;
 
 public class CraneSequence : MonoBehaviour
 {
     [Header("Controller Buttons (automatically assigned if not set)")]
     [SerializeField] List<Button> buttons = new List<Button>(); // Array of buttons to be activated/deactivated
+
+    [Header("Target Tracking")]
     string currentSignal; // Current signal from the signalman
     public bool changedTarget = false; // Flag to indicate if the target has changed
     public bool isCraneMoving = false; // Flag to indicate if the crane is moving

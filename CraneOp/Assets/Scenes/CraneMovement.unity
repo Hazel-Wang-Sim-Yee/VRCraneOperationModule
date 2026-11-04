@@ -337,6 +337,11 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 49230243}
   m_CullTransparentMesh: 1
+--- !u!223 &160995489 stripped
+Canvas:
+  m_CorrespondingSourceObject: {fileID: 4489678780499432453, guid: f5c35a2f3d120e540a1860ae66246fc8, type: 3}
+  m_PrefabInstance: {fileID: 8999781215986430205}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &170060097
 GameObject:
   m_ObjectHideFlags: 0
@@ -407,6 +412,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ScoreHandler
   collisions: 0
   craneSequence: {fileID: 202136157}
+  insideColor: {fileID: 2100000, guid: dd4dd00c2aacb8d44b3de87430d0e561, type: 2}
+  outsideColor: {fileID: 2100000, guid: 0a2a30c87f4378149bc0a4f21491167e, type: 2}
 --- !u!33 &170060101
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -440,7 +447,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 9c52a7e85c986c2429f4638c6756501c, type: 2}
+  - {fileID: 2100000, guid: 0a2a30c87f4378149bc0a4f21491167e, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -499,6 +506,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ScoreHandler
   collisions: 0
   craneSequence: {fileID: 0}
+  insideColor: {fileID: 0}
+  outsideColor: {fileID: 0}
 --- !u!54 &184214113
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -682,6 +691,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::UI
   feedbackText: {fileID: 499974105}
   controllerCanvas: {fileID: 49230245}
+  canvasesToRotate:
+  - {fileID: 160995489}
 --- !u!114 &202136155
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -767,6 +778,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ScoreHandler
   collisions: 0
   craneSequence: {fileID: 0}
+  insideColor: {fileID: 0}
+  outsideColor: {fileID: 0}
 --- !u!54 &258856663
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -1087,6 +1100,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ScoreHandler
   collisions: 0
   craneSequence: {fileID: 0}
+  insideColor: {fileID: 0}
+  outsideColor: {fileID: 0}
 --- !u!54 &344071457
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -2578,6 +2593,10 @@ PrefabInstance:
       propertyPath: m_AngularDamping
       value: 3
       objectReference: {fileID: 0}
+    - target: {fileID: 7620914932877563792, guid: 8c2410a53999bf640866701ddd1d8dfd, type: 3}
+      propertyPath: mass
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7640652155422036370, guid: 8c2410a53999bf640866701ddd1d8dfd, type: 3}
       propertyPath: m_LocalPosition.x
       value: -0.732
@@ -3009,6 +3028,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ScoreHandler
   collisions: 0
   craneSequence: {fileID: 202136157}
+  insideColor: {fileID: 2100000, guid: dd4dd00c2aacb8d44b3de87430d0e561, type: 2}
+  outsideColor: {fileID: 2100000, guid: 0a2a30c87f4378149bc0a4f21491167e, type: 2}
 --- !u!33 &1159483692
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -3042,7 +3063,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 9c52a7e85c986c2429f4638c6756501c, type: 2}
+  - {fileID: 2100000, guid: 0a2a30c87f4378149bc0a4f21491167e, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -3470,6 +3491,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ScoreHandler
   collisions: 0
   craneSequence: {fileID: 202136157}
+  insideColor: {fileID: 2100000, guid: dd4dd00c2aacb8d44b3de87430d0e561, type: 2}
+  outsideColor: {fileID: 2100000, guid: 0a2a30c87f4378149bc0a4f21491167e, type: 2}
 --- !u!33 &1327281130
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -3503,7 +3526,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 9c52a7e85c986c2429f4638c6756501c, type: 2}
+  - {fileID: 2100000, guid: 0a2a30c87f4378149bc0a4f21491167e, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -3752,6 +3775,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ScoreHandler
   collisions: 0
   craneSequence: {fileID: 0}
+  insideColor: {fileID: 0}
+  outsideColor: {fileID: 0}
 --- !u!54 &1378745696
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -4717,6 +4742,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ScoreHandler
   collisions: 0
   craneSequence: {fileID: 0}
+  insideColor: {fileID: 0}
+  outsideColor: {fileID: 0}
 --- !u!54 &1799375518
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -4890,7 +4917,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 9c52a7e85c986c2429f4638c6756501c, type: 2}
+  - {fileID: 2100000, guid: 0a2a30c87f4378149bc0a4f21491167e, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -4928,6 +4955,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ScoreHandler
   collisions: 0
   craneSequence: {fileID: 202136157}
+  insideColor: {fileID: 2100000, guid: dd4dd00c2aacb8d44b3de87430d0e561, type: 2}
+  outsideColor: {fileID: 2100000, guid: 0a2a30c87f4378149bc0a4f21491167e, type: 2}
 --- !u!65 &1893088120
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -5273,6 +5302,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ScoreHandler
   collisions: 0
   craneSequence: {fileID: 0}
+  insideColor: {fileID: 0}
+  outsideColor: {fileID: 0}
 --- !u!54 &1933928785
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -5703,7 +5734,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2296903094615964730, guid: 90d48502e89c505419322e0ce42ed9e4, type: 3}
       propertyPath: m_PresetInfoIsWorld
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2359931034325498836, guid: 90d48502e89c505419322e0ce42ed9e4, type: 3}
       propertyPath: m_AnchorMax.y
@@ -5858,33 +5889,9 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 3591400835591362567, guid: 8c2410a53999bf640866701ddd1d8dfd, type: 3}
-      propertyPath: m_IsTrigger
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 5905621148056614704, guid: 8c2410a53999bf640866701ddd1d8dfd, type: 3}
       propertyPath: m_Name
       value: load
-      objectReference: {fileID: 0}
-    - target: {fileID: 7005221756237003537, guid: 8c2410a53999bf640866701ddd1d8dfd, type: 3}
-      propertyPath: m_Mass
-      value: 100
-      objectReference: {fileID: 0}
-    - target: {fileID: 7005221756237003537, guid: 8c2410a53999bf640866701ddd1d8dfd, type: 3}
-      propertyPath: m_UseGravity
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7005221756237003537, guid: 8c2410a53999bf640866701ddd1d8dfd, type: 3}
-      propertyPath: m_ImplicitCom
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7005221756237003537, guid: 8c2410a53999bf640866701ddd1d8dfd, type: 3}
-      propertyPath: m_Interpolate
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7005221756237003537, guid: 8c2410a53999bf640866701ddd1d8dfd, type: 3}
-      propertyPath: m_AngularDamping
-      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 7640652155422036370, guid: 8c2410a53999bf640866701ddd1d8dfd, type: 3}
       propertyPath: m_LocalPosition.x
@@ -6040,6 +6047,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4489678780499432453, guid: f5c35a2f3d120e540a1860ae66246fc8, type: 3}
+      propertyPath: m_Camera
+      value: 
+      objectReference: {fileID: 2000669007}
     - target: {fileID: 5891385864222575832, guid: f5c35a2f3d120e540a1860ae66246fc8, type: 3}
       propertyPath: m_Name
       value: 1

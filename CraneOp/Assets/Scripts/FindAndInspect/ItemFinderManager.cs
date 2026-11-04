@@ -6,6 +6,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
 using TMPro;
+using System.Collections;
 
 public class ItemFinderManager : MonoBehaviour
 {
@@ -80,7 +81,7 @@ public class ItemFinderManager : MonoBehaviour
         if (currentItemIndex >= itemsToFind.Length)
         {
             UI.instance.UpdateFeedbackText("All items found!");
-            nextButton.gameObject.SetActive(true);
+            StartCoroutine(DelayToNextModule(3f));
             return;
         }
         UpdateCurrentItem();
@@ -92,5 +93,16 @@ public class ItemFinderManager : MonoBehaviour
     public void UpdateChecklist()
     {
         checklistItemsText[currentItemIndex].text = "<s>" + checklistItemsText[currentItemIndex].text + "</s>";
+    }
+
+    /// <summary>
+    /// Delays the transition to the next module after a specified delay to ensure that the final feedback text is visible to the user.
+    /// </summary>
+    /// <param name="delay"></param>
+    /// <returns></returns>
+    IEnumerator DelayToNextModule(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        Events.Instance.SequenceComplete();
     }
 }
