@@ -789,7 +789,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.XR.Interaction.Toolkit::UnityEngine.XR.Interaction.Toolkit.Interactors.XRSocketInteractor
   m_InteractionManager: {fileID: 0}
   m_InteractionLayers:
-    m_Bits: 2
+    m_Bits: 6
   m_Handedness: 0
   m_AttachTransform: {fileID: 0}
   m_KeepSelectedTargetValid: 1
@@ -2025,6 +2025,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ColliderDetect
   collisions: 0
   craneSequence: {fileID: 0}
+  insideColor: {fileID: 0}
+  outsideColor: {fileID: 0}
 --- !u!1 &7001828408219844016
 GameObject:
   m_ObjectHideFlags: 0
@@ -2752,6 +2754,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ColliderDetect
   collisions: 0
   craneSequence: {fileID: 0}
+  insideColor: {fileID: 0}
+  outsideColor: {fileID: 0}
 --- !u!1001 &2597535586985039630
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -1,11 +1,13 @@
 /*
     This script is responsible for managing the crane sequence in the game.
-    It handles the activation and deactivation of buttons based on the crane's state.
+    It keeps track of the current signal from the signalman, manages the state of the crane's movement, and enables or disables the appropriate buttons based on the crane's state.
 */
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
 using System.Collections;
+using UnityEngine.XR.Interaction.Toolkit;
+using UnityEngine.XR.Interaction.Toolkit.Interactables;
 
 public class CraneSequence : MonoBehaviour
 {
@@ -16,9 +18,21 @@ public class CraneSequence : MonoBehaviour
     string currentSignal; // Current signal from the signalman
     public bool changedTarget = false; // Flag to indicate if the target has changed
     public bool isCraneMoving = false; // Flag to indicate if the crane is moving
+
+    [Header("Operation State")]
+    public bool hasOperationStarted = false; // Flag to indicate if the crane operation has started
+    XRGrabInteractable loadInteractable; // Reference to the XRGrabInteractable component of the load
+    LoadHookSettings loadHookSettings; // Reference to the LoadHookSettings script to manage the load's state
     
     void Start()
     {
+        loadHookSettings = FindObjectOfType<LoadHookSettings>();
+        if (loadHookSettings == null)
+        {
+            Debug.LogError("LoadHookSettings script not found in the scene. Please ensure it is attached to a GameObject.");
+        }
+        
+        // Auto-find might be broken at times so assign the buttons manually in the inspector to prevent issues.
         if (buttons == null || buttons.Count == 0)
         {
             buttons.Add(GameObject.Find("Left").GetComponent<Button>());
@@ -28,13 +42,21 @@ public class CraneSequence : MonoBehaviour
             buttons.Add(GameObject.Find("Up").GetComponent<Button>());
             buttons.Add(GameObject.Find("Down").GetComponent<Button>());
         }
-        currentSignal = SignalmanManager.instance.currentSignal;
+
         ActivateButtons(false); // Disable all buttons at the start of the sequence
         UI.instance.controllerCanvas.gameObject.SetActive(false);
+
+        // Subscribe to the load loaded and sequence complete events to manage the load's interactable state
+        Events.Instance.onLoadLoaded += () => {loadInteractable = loadHookSettings.load.GetComponent<XRGrabInteractable>(); SignalmanManager.instance.currentSignalIndex = 0;};
+        Events.Instance.onSequenceComplete += CompleteOperation;
     }
+
     void Update()
     {
-        currentSignal = SignalmanManager.instance.currentSignal;
+        if (!hasOperationStarted)
+        {
+            SignalmanManager.instance.currentSignalIndex = 0; // Reset the current signal index if the operation has not started
+        }
         if (SignalmanManager.instance.currentSignalIndex == 0 || SignalmanManager.instance.currentSignalIndex == SignalmanManager.instance.targets.Length - 1)
         {
             ActivateButtons(true); // Enable hoisting buttons if the crane is at the first or last target area
@@ -70,6 +92,24 @@ public class CraneSequence : MonoBehaviour
     /// </summary>
     public void SetCraneMovingState()
     {
+        // If crane already moved once and the operation has not started, set the operation as started
+        if (isCraneMoving && !hasOperationStarted)
+        {
+            hasOperationStarted = true;
+            // Lock the load to not allow the player to interact with it throughout the operation
+            loadInteractable.interactionLayers = InteractionLayerMask.GetMask("LockedLoad");
+        }
         isCraneMoving = !isCraneMoving;
+    }
+
+    /// <summary>
+    /// Completes the crane operation by unlocking the load for interaction and displaying the final score canvas with relevant statistics.
+    /// </summary>
+    void CompleteOperation()
+    {
+        loadInteractable.interactionLayers = InteractionLayerMask.GetMask("Load");
+        UI.instance.finalScoreCanvas.gameObject.SetActive(true);
+        UI.instance.UpdateScoreText("CollisionStat", FindObjectOfType<CollisionManager>().totalCollisions, "Total Collisions");
+        UI.instance.UpdateScoreText("WrongSignalStat", SignalmanManager.instance.incorrectSignals, "Wrong Signals");
     }
 }

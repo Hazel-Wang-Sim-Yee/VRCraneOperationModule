@@ -1,6 +1,7 @@
 /*
-    This script is used to manage UI elements in the game, such as feedback text and score display.
-    It provides methods to update the feedback text with a message and clear it after a delay, as well as update the score text for different score types.
+    This script manages UI elements in the game, including loading screens, feedback messages, and score updates.
+    It provides methods to update the UI based on game events and ensures that the UI elements are properly initialized and displayed to the player.
+    The script also handles the rotation of world-space canvases to face the camera, enhancing the player's experience in the VR environment.
 */
 using UnityEngine;
 using UnityEngine.UI;
@@ -9,15 +10,21 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 
+[DefaultExecutionOrder(-1)] // Ensure this script runs before other scripts that may depend on it
 public class UI : MonoBehaviour
 {
+    [Header("Loading Screen (auto-assigned by name if not assigned)")]
+    public Animator loadingAnimator;
+    public TextMeshProUGUI loadingText;
+
     [Header("Feedback")]
     [SerializeField] TextMeshProUGUI feedbackText;
     Coroutine clearFeedbackCoroutine;
 
-    [Header("Controller Canvas")]
-    [Tooltip("For crane modules, this is the canvas that contains the controller buttons.")]
+    [Header("Crane modules Canvas")]
+    [Tooltip("This is the canvas that contains the controller buttons.")]
     public Image controllerCanvas;
+    public Image finalScoreCanvas;
 
     [Header("Singleton")]
     public static UI instance;
@@ -37,18 +44,32 @@ public class UI : MonoBehaviour
             instance = this;
         }
     }
+
     void Start()
     {
+        if (loadingAnimator == null)
+        {
+            loadingAnimator = GameObject.Find("LoadingUI").GetComponent<Animator>();
+        }
+        if (loadingText == null)
+        {
+            loadingText = GameObject.Find("LoadingText").GetComponent<TextMeshProUGUI>();
+        }
+
         feedbackText.text = "";
         
         // Subscribe based on current scene to avoid unnecessary subscriptions in non-relevant scenes
         if (SceneManager.GetActiveScene().name.Contains("Crane"))
         {
             // Ensure that the controller canvas is assigned in the inspector for crane modules
-            if (controllerCanvas == null)
+            if (controllerCanvas == null || finalScoreCanvas == null)
             {
-                Debug.LogWarning("Ensure that the Controller Canvas is assigned if in crane modules.");
+                Debug.LogWarning("Ensure that the Controller Canvas and Final Score Canvas are assigned if in crane modules.");
+            } else {
+                controllerCanvas.gameObject.SetActive(false);
+                finalScoreCanvas.gameObject.SetActive(false);
             }
+
             Events.Instance.onLoadLoaded += ActivateControllerCanvas;
             Events.Instance.onLoadUnloaded += DeactivateControllerCanvas;
             Events.Instance.onSequenceComplete += DeactivateControllerCanvas; // Deactivate the controller canvas when the sequence is complete
@@ -86,6 +107,22 @@ public class UI : MonoBehaviour
     /// <param name="scoreType"></param>
     public void UpdateScoreText(string label, int score, string scoreType)
     {
+        // Validating Checks
+        if (GameObject.Find(label) == null)
+        {
+            Debug.LogError("UI element with label '" + label + "' not found. Please ensure it is assigned in the inspector.");
+            return;
+        } else if (GameObject.Find(label).GetComponent<TextMeshProUGUI>() == null)
+        {
+            Debug.LogError("UI element with label '" + label + "' does not have a TextMeshProUGUI component. Please ensure it is assigned in the inspector.");
+            return;
+        } else if (scoreType == null || scoreType == "")
+        {
+            Debug.LogError("Score type is null or empty. Please provide a valid score type.");
+            return;
+        }
+
+        // Update the score text with the provided score and score type
         GameObject.Find(label).GetComponent<TextMeshProUGUI>().text = scoreType + ": " + score.ToString();
     }
 

@@ -6,8 +6,9 @@ using UnityEngine;
 
 public class CollisionManager : MonoBehaviour
 {
-    int totalCollisions;
+    public int totalCollisions;
     public GameObject[] collisionObjects;
+
     void Start()
     {
         // Find all objects with the "CollisionObject" tag and store them in the collisionObjects array
@@ -21,13 +22,18 @@ public class CollisionManager : MonoBehaviour
                 colliderDetect.enabled = false; // Disable the ColliderDetect script on each collision object to prevent it from counting collisions before the load is attached.
             }
         }
-        this.enabled = false; // Disable the script after initialization to prevent unnecessary updates
+        
+        Events.Instance.onLoadLoaded += () => {EnableCollisionDetection(true);};
+        Events.Instance.onLoadUnloaded += () => {EnableCollisionDetection(false);};
     }
     void FixedUpdate()
     {
         CalculateTotalCollisions();
     }
     
+    /// <summary>
+    /// Calculates the total number of collisions detected by all objects with the "CollisionObject" tag and updates the UI accordingly.
+    /// </summary>
     void CalculateTotalCollisions()
     {
         totalCollisions = 0;
@@ -40,5 +46,21 @@ public class CollisionManager : MonoBehaviour
             }
         }
         UI.instance.UpdateScoreText("CollisionText", totalCollisions, "Collisions");
+    }
+
+    /// <summary>
+    /// Enables or disables collision detection for all collision objects.
+    /// </summary>
+    /// <param name="enable"></param>
+    void EnableCollisionDetection(bool enable)
+    {
+        foreach (GameObject obj in collisionObjects)
+        {
+            ColliderDetect colliderDetect = obj.GetComponent<ColliderDetect>();
+            if (colliderDetect != null)
+            {
+                colliderDetect.enabled = enable;
+            }
+        }
     }
 }

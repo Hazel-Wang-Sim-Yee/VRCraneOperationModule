@@ -1,6 +1,7 @@
 /*
-    This script is used to handle interactions in the game, specifically for module selection.
-    It can be used to create other interaction functionalities in the future as needed.
+    This script manages scene transitions and module selection in the VR Crane Operation Module.
+    It handles loading new scenes based on user input, updates the UI with the current module information, and manages the sequence of modules in the build settings.
+    The script also ensures that the player is informed about the loading process through UI feedback.
 */
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -8,7 +9,7 @@ using System.Collections;
 using UnityEngine.UI;
 using TMPro;
 
-public class Interactor : MonoBehaviour
+public class SceneHandler : MonoBehaviour
 {
     Coroutine loadingCoroutine;
 
@@ -17,7 +18,21 @@ public class Interactor : MonoBehaviour
 
     void Start()
     {
-        Events.Instance.onSequenceComplete += LoadNextModule; // Subscribe to the sequence complete event to load the next module
+        if (UI.instance.loadingText != null)
+        {
+            UI.instance.loadingText.text = "Loading Module: " + SceneManager.GetActiveScene().name;
+        }
+        else
+        {
+            Debug.LogWarning("UI instance has failed to find loading text.");
+        }
+
+        // Subscribe to the sequence complete event to load the next module if not in crane modules
+        if (!SceneManager.GetActiveScene().name.Contains("Crane"))
+        {
+            Events.Instance.onSequenceComplete += LoadNextModule;
+        }
+
         // Initialize the module selection buttons with the names of the modules in the build settings
         for (int i = 0; i < moduleButtonTexts.Length; i++)
         {
@@ -45,16 +60,11 @@ public class Interactor : MonoBehaviour
     {
         if (moduleIndex < SceneManager.sceneCountInBuildSettings)
         {
-            if (SceneManager.GetActiveScene().buildIndex == moduleIndex)
-            {
-                UI.instance.UpdateFeedbackText("Already in the selected module: " + SceneManager.GetSceneByBuildIndex(moduleIndex).name);
-                return;
-            }
             if (loadingCoroutine != null)
             {
                 StopCoroutine(loadingCoroutine);
             }
-            loadingCoroutine = StartCoroutine(loadingCoroutineMethod(moduleIndex, 3)); // Start the coroutine to load the new scene with a 3-second delay
+            loadingCoroutine = StartCoroutine(loadingCoroutineMethod(moduleIndex));
         }
         else
         {
@@ -85,17 +95,27 @@ public class Interactor : MonoBehaviour
     /// </summary>
     /// <param name="moduleIndex"></param>
     /// <returns></returns>
-    IEnumerator loadingCoroutineMethod(int moduleIndex, int delay)
+    IEnumerator loadingCoroutineMethod(int moduleIndex)
     {
         string scenePath = SceneUtility.GetScenePathByBuildIndex(moduleIndex);
         string sceneName = System.IO.Path.GetFileNameWithoutExtension(scenePath);
+
         if (string.IsNullOrEmpty(sceneName))
         {
             Debug.LogError("Scene name not found for module index: " + moduleIndex);
             yield break;
         }
-        UI.instance.UpdateFeedbackText("Loading module: " + sceneName);
-        yield return new WaitForSeconds(delay); // Wait for the specified delay before loading the scene
-        SceneManager.LoadScene(moduleIndex);
+        if (UI.instance.loadingAnimator != null && UI.instance.loadingText != null)
+        {
+            UI.instance.loadingAnimator.SetTrigger("Teleporting");
+            UI.instance.loadingText.text = "Loading Module: " + sceneName;
+            yield return new WaitForSeconds(UI.instance.loadingAnimator.GetCurrentAnimatorStateInfo(0).length); // Wait for the animation to finish
+            SceneManager.LoadScene(moduleIndex);
+        }
+        else
+        {
+            Debug.LogWarning("Loading animator is not assigned in the inspector.");
+            loadingCoroutine = null;
+        }
     }
 }

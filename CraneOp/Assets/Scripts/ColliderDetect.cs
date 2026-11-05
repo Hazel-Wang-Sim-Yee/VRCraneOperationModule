@@ -50,6 +50,22 @@ public class ColliderDetect : MonoBehaviour
         }
     }
 
+    void OnDisable()
+    {
+        if (collisionCoroutine != null)
+        {
+            StopCoroutine(collisionCoroutine);
+            collisionCoroutine = null;
+        }
+
+        ableToCollide = false;
+    }
+
+    void OnEnable()
+    {
+        ableToCollide = true;
+    }
+
     /// <summary>
     /// Coroutine to prevent multiple collisions from being counted within a short time frame.
     /// It increments the collision count, disables further collisions for a set cooldown period, and then re-enables collision detection.
@@ -117,9 +133,8 @@ public class ColliderDetect : MonoBehaviour
             CraneHoistMove craneHoistMove = GameObject.Find("hoist").GetComponent<CraneHoistMove>();
             craneHoistMove.isHoistUp = true;
         }
-        if (other.CompareTag("Load")&& CompareTag("CraneDestination"))
+        if (other.CompareTag("Load") && CompareTag("CraneDestination"))
         {
-            gameObject.GetComponent<MeshRenderer>().material = insideColor;
             // Check if the crane is moving or not and if its not moving, check if the target has already been changed. If not, change the target to the next area.
             if (craneSequence.isCraneMoving == false && craneSequence.changedTarget == false)
             {

@@ -92,7 +92,7 @@ public class SignalmanManager : MonoBehaviour
         if (currentSignalIndex >= targets.Length)
         {
             UI.instance.UpdateFeedbackText("All target areas completed!");
-            StartCoroutine(DelayToNextModule(3f));
+            Events.Instance.SequenceComplete();
 
             // Unsubscribe from events as the sequence is complete
             Events.Instance.onLoadLoaded -= () => {isLoadAttached = true; ShowTarget(true);};
@@ -158,21 +158,18 @@ public class SignalmanManager : MonoBehaviour
 
     void ShowTarget(bool show)
     {
+        // Hide all target areas initially
+        foreach (GameObject target in targets)
+        {
+            target.SetActive(false);
+            target.GetComponent<Collider>().enabled = false;
+        }
+
+        // Show the current target area if the load is attached and the current signal index is valid
         if (currentSignalIndex < targets.Length)
         {
             targets[currentSignalIndex].GetComponent<Collider>().enabled = show;
             targets[currentSignalIndex].SetActive(show);
         }
-    }
-
-    /// <summary>
-    /// Delays the transition to the next module after a specified delay to ensure that the final feedback text is visible to the user.
-    /// </summary>
-    /// <param name="delay"></param>
-    /// <returns></returns>
-    IEnumerator DelayToNextModule(float delay)
-    {
-        yield return new WaitForSeconds(delay);
-        Events.Instance.SequenceComplete();
     }
 }

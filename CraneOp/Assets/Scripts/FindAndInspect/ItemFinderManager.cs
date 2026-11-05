@@ -15,7 +15,6 @@ public class ItemFinderManager : MonoBehaviour
     public GameObject[] itemsToFind;
     public int currentItemIndex = 0;
     public Button findButton;
-    [SerializeField] Button nextButton;
     public Image itemInspectionImage;
     public Material highlightMaterial;
     public TextMeshProUGUI itemNameText;

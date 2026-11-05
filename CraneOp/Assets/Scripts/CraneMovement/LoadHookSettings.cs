@@ -170,19 +170,7 @@ public class LoadHookSettings : MonoBehaviour
         loadWasKinematic = loadRb.isKinematic;
         loadRb.isKinematic = false;
 
-        // Set up collision objects for detection and management while the load is attached.
-        // The CollisionManager script is enabled to manage collisions between the load and the crane, and the ColliderDetect script on each collision object is enabled to allow it to count collisions while the load is attached.
-        SignalmanManager.instance.isLoadAttached = true; // Set the isLoadAttached flag to true when the load is attached.
-        collisionManager.enabled = true; // Enable the CollisionManager script to manage collisions between the load and the crane while the load is attached.
-        foreach(GameObject obj in collisionManager.collisionObjects)
-        {
-            ColliderDetect colliderDetect = obj.GetComponent<ColliderDetect>();
-            if (colliderDetect != null)
-            {
-                colliderDetect.enabled = true; // Enable the ColliderDetect script on each collision object to allow it to count collisions while the load is attached.
-            }
-        }
-
+        SignalmanManager.instance.isLoadAttached = true; // Set the isLoadAttached flag to true when the load is attached. 
         Events.Instance.LoadLoaded();
     }
 
@@ -208,19 +196,7 @@ public class LoadHookSettings : MonoBehaviour
         // Give the load time to clear the hook before collisions come back.
         StartCoroutine(RestoreCollisionsLater());
 
-        // Disable the ColliderDetect script on each collision object to prevent it from counting collisions after the load is detached.
         SignalmanManager.instance.isLoadAttached = false; // Set the isLoadAttached flag to false when the load is detached.
-        foreach(GameObject obj in collisionManager.collisionObjects)
-        {
-            ColliderDetect colliderDetect = obj.GetComponent<ColliderDetect>();
-            if (colliderDetect != null)
-            {
-                colliderDetect.enabled = false; // Disable the ColliderDetect script on each collision object to prevent it from counting collisions after the load is detached.
-            }
-        }
-
-        collisionManager.enabled = false; // Disable the CollisionManager script to prevent collisions detection after the load is detached.
-
         Events.Instance.LoadUnloaded();
     }
 
