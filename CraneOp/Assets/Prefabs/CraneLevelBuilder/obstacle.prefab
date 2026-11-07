@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 2993102426403267772}
   - component: {fileID: 2173381264531859318}
   - component: {fileID: 6742571735933183951}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: obstacle
   m_TagString: CollisionObject
   m_Icon: {fileID: 0}
@@ -154,3 +154,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ScoreHandler
   collisions: 0
+  craneSequence: {fileID: 0}
+  insideColor: {fileID: 0}
+  outsideColor: {fileID: 0}

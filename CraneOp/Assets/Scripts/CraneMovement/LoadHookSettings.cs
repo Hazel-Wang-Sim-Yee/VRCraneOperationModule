@@ -6,6 +6,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
 public class LoadHookSettings : MonoBehaviour
 {
@@ -19,6 +20,7 @@ public class LoadHookSettings : MonoBehaviour
     [Header("Capacity")]
     [Tooltip("Heaviest load (kg) the crane can lift. Heavier loads are refused and the player is told.")]
     [SerializeField] float ratedCapacityKg = 50f;
+    [SerializeField] TextMeshProUGUI hookInfoText;
 
     [Header("Joint")]
     [Tooltip("Locked = rigid hold. Untick to let the load swing.")]
@@ -36,18 +38,8 @@ public class LoadHookSettings : MonoBehaviour
 
     CollisionManager collisionManager;
 
-    public static LoadHookSettings instance;
-
     void Awake()
     {
-        if (instance != null && instance != this)
-        {
-            Destroy(this);
-        }
-        else
-        {
-            instance = this;
-        }
         // Get the hookBody from the socket parent (hook) rigidbody if not set in the inspector.
         if (hookBody == null) hookBody = GetComponentInParent<Rigidbody>();
         if (hookBody == null) Debug.LogError("No Rigidbody found on the hook (parent of the socket).", this);
@@ -66,10 +58,18 @@ public class LoadHookSettings : MonoBehaviour
 
     void Start()
     {
+        StopAllCoroutines(); // Ensure no coroutines are running at the start
         collisionManager = GameObject.FindObjectOfType<CollisionManager>();
         if (collisionManager == null)
         {
             Debug.LogError("CollisionManager script not found in the scene. Please ensure that it is in the scene if you require load collision management functionality.");
+        }
+        if (hookInfoText == null)
+        {
+            Debug.LogWarning("Hook info text not assigned. Please assign a TextMeshProUGUI component in the inspector if you want to display hook information.");
+        } else 
+        {
+            hookInfoText.text = $"Weight Limit: {ratedCapacityKg:0.#} kg";
         }
     }
 
@@ -124,10 +124,12 @@ public class LoadHookSettings : MonoBehaviour
                     $"This load is too heavy to lift ({mass:0.#} kg). The crane's limit is {ratedCapacityKg:0.#} kg."
                 );
             return;
+        } else
+        {
+            hookInfoText.gameObject.SetActive(false); // Hide the hook info text when a load is attached.
         }
 
         StopAllCoroutines();   // Make sure the RestoreCollisionsLater coroutine is not running when attaching a new load.
-        if (loadPos != null) loadPos.position = load.transform.position; // Set the loadPos to the load's position
 
         // Get or add a Rigidbody to the load if it doesn't have one.
         loadRb = load.GetComponent<Rigidbody>();
@@ -195,6 +197,10 @@ public class LoadHookSettings : MonoBehaviour
 
         // Give the load time to clear the hook before collisions come back.
         StartCoroutine(RestoreCollisionsLater());
+        if (hookInfoText != null)
+        {
+            hookInfoText.gameObject.SetActive(true); // Hide the hook info text when a load is attached.
+        }
 
         SignalmanManager.instance.isLoadAttached = false; // Set the isLoadAttached flag to false when the load is detached.
         Events.Instance.LoadUnloaded();

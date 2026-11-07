@@ -8,10 +8,16 @@
     Other features like mass and center of mass configuration are present but not used in the current game logic.
 */
 using UnityEngine;
+using TMPro;
 
 [RequireComponent(typeof(Rigidbody))]
 public class CraneLoad : MonoBehaviour
 {
+    [Header("Load Settings")]
+    [Tooltip("The type of load.")]
+    [SerializeField] LoadType loadType;
+    enum LoadType { Regular, Irregular, Unbalanced }
+
     [Header("Lifting")]
     [Tooltip("Empty child where the hook grabs the load (the lifting eye). Defaults to this object's pivot.")]
     [SerializeField] Transform liftingPoint;
@@ -30,16 +36,29 @@ public class CraneLoad : MonoBehaviour
     [SerializeField] LineRenderer lineRenderer;
     bool drawLine = false; // Flag to indicate whether to draw the line to the target area
 
+    [Header("UI Settings")]
+    [Tooltip("The canvas to display load information (e.g., weight, type).")]
+    [SerializeField] Canvas loadInfoCanvas; // Canvas to display load information (e.g., weight, type)
+
+    [Header("Script References")]
+    [SerializeField] LoadHookSettings loadHookSettings;
+
     void Awake()
     {
         Body = GetComponent<Rigidbody>();
         Body.mass = mass;
         if (overrideCenterOfMass) Body.centerOfMass = localCenterOfMass;
     }
+
     void Start()
     {
-        Events.Instance.onLoadLoaded += StartDrawing;
-        Events.Instance.onLoadUnloaded += StopDrawing;
+        Events.Instance.onLoadLoaded += () => {drawLine = true; loadInfoCanvas.gameObject.SetActive(false); lineRenderer.enabled = true;};
+        Events.Instance.onLoadUnloaded += () => {drawLine = false; loadInfoCanvas.gameObject.SetActive(true); lineRenderer.enabled = false;};
+
+        if (loadInfoCanvas != null)
+        {
+            loadInfoCanvas.GetComponentInChildren<TextMeshProUGUI>().text = $"Type: {loadType}\nWeight: {mass:0.#} kg";
+        }
         if (lineRenderer == null)
         {
             lineRenderer = GetComponent<LineRenderer>();
@@ -48,11 +67,19 @@ public class CraneLoad : MonoBehaviour
                 Debug.LogWarning("LineRenderer component not found on the load. Please add a LineRenderer component to visualize the line to the target.");
             }
         }
+        if (loadHookSettings == null)
+        {
+            loadHookSettings = FindObjectOfType<LoadHookSettings>();
+            if (loadHookSettings == null)
+            {
+                Debug.LogError("LoadHookSettings script not found in the scene. Please ensure it is attached to a GameObject.");
+            }
+        }
     }
 
-    void Update()
+    void LateUpdate()
     {
-        if (LoadHookSettings.instance.load == this.gameObject)
+        if (loadHookSettings.load == this.gameObject)
         {
             if (SignalmanManager.instance.currentSignalIndex < SignalmanManager.instance.targets.Length)
             {
@@ -129,15 +156,5 @@ public class CraneLoad : MonoBehaviour
         lineRenderer.positionCount = 2;
         lineRenderer.SetPosition(0, transform.position);
         lineRenderer.SetPosition(1, target);
-    }
-
-    void StartDrawing()
-    {
-        drawLine = true;
-    }
-
-    void StopDrawing()
-    {
-        drawLine = false;
     }
 }

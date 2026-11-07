@@ -10,7 +10,10 @@ using System.Collections;
 
 public class ItemFinderManager : MonoBehaviour
 {
+    [Header("Singleton")]
     public static ItemFinderManager Instance { get; private set; }
+
+    [Header("Item Finding Settings")]
     // Add all the items trainne has to find in the inspector
     public GameObject[] itemsToFind;
     public int currentItemIndex = 0;
@@ -56,8 +59,12 @@ public class ItemFinderManager : MonoBehaviour
             {
                 checklistItemsText[i].text = i+1 + ". " + itemsToFind[i].GetComponent<ItemFinder>().itemName;
             }
-            // Enable the first item to find
         }
+    }
+
+    void Start()
+    {
+        StopAllCoroutines(); // Stop any existing coroutines to prevent conflicts
     }
 
     /// <summary>

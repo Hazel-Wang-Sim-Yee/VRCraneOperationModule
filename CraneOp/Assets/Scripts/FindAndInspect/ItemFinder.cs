@@ -9,7 +9,10 @@ using System.Collections.Generic;
 
 public class ItemFinder : MonoBehaviour
 {
+    [Header("Trigger Collider")]
     public Collider itemTriggerCollider; // Reference for the item's trigger collider as there is 2 colliders on the item, one for the trigger and one for the colliding collider.
+    
+    [Header("Item Settings")]
     public string itemName;
     [SerializeField] Sprite[] defectImages;
 

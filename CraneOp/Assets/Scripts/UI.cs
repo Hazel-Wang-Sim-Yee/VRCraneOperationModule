@@ -47,6 +47,8 @@ public class UI : MonoBehaviour
 
     void Start()
     {
+        StopAllCoroutines(); // Stop any existing coroutines to prevent conflicts
+        
         if (loadingAnimator == null)
         {
             loadingAnimator = GameObject.Find("LoadingUI").GetComponent<Animator>();

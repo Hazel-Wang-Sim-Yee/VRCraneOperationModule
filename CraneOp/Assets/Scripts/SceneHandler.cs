@@ -12,12 +12,15 @@ using TMPro;
 public class SceneHandler : MonoBehaviour
 {
     Coroutine loadingCoroutine;
+    public int currentModuleIndex;
 
     [Header("Module Selection Buttons")]
     [SerializeField] TextMeshProUGUI[] moduleButtonTexts; // Array to hold the TextMeshProUGUI components of the module selection buttons
 
     void Start()
     {
+        StopAllCoroutines(); // Stop any existing coroutines to prevent conflicts
+
         if (UI.instance.loadingText != null)
         {
             UI.instance.loadingText.text = "Loading Module: " + SceneManager.GetActiveScene().name;
@@ -48,6 +51,8 @@ public class SceneHandler : MonoBehaviour
                 Debug.LogWarning($"No module found for button index {i}. Please check the build settings.");
             }
         }
+
+        currentModuleIndex = SceneManager.GetActiveScene().buildIndex; // Store the current module index for reference
     }
 
     /// <summary>
@@ -78,7 +83,7 @@ public class SceneHandler : MonoBehaviour
     /// </summary>
     public void LoadNextModule()
     {
-        int nextModuleIndex = SceneManager.GetActiveScene().buildIndex + 1;
+        int nextModuleIndex = currentModuleIndex + 1;
         if (nextModuleIndex < SceneManager.sceneCountInBuildSettings)
         {
             ModuleSelection(nextModuleIndex);

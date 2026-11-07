@@ -18,12 +18,16 @@ public class SignalmanManager : MonoBehaviour
     public int incorrectSignals = 0;
     public int currentSignalIndex;
     public GameObject[] targets;
+    string pendingSignal;
+    float pendingSignalTimer;
+    float signalStayTime = 0.2f; // Time in seconds to wait before updating the signalman signal
     
     [Header("Script References")]
     CraneSequence craneSequence;
 
     [Header("Load Settings")]
     public bool isLoadAttached = false;
+    [SerializeField] Transform loadPos; // Position of the load to determine its relation to the target area
 
     void Awake()
     {
@@ -67,17 +71,15 @@ public class SignalmanManager : MonoBehaviour
         UI.instance.UpdateScoreText("IncorrectSignalsText", incorrectSignals, "Incorrect Signals");
     }
 
-    void LateUpdate()
+    void Update()
     {
         if (!isLoadAttached)
         {
-            currentSignal = "";
             signalmanSignal.text = "Waiting for load to be attached";
+            return;
         }
-        else
-        {
-            FindSignalDirection();
-        }
+
+        FindSignalDirection();
 
         UI.instance.UpdateScoreText("IncorrectSignalsText", incorrectSignals, "Incorrect Signals");
     }
@@ -87,6 +89,10 @@ public class SignalmanManager : MonoBehaviour
     /// </summary>
     public void NextArea()
     {
+        if (craneSequence.hasOperationStarted == false)
+        {
+            return; // Ignore if the operation hasn't started
+        }
         craneSequence.ActivateButtons(false);
         currentSignalIndex++;
         if (currentSignalIndex >= targets.Length)
@@ -115,47 +121,68 @@ public class SignalmanManager : MonoBehaviour
     /// </summary>
     public void FindSignalDirection()
     {
-        if (currentSignalIndex >= targets.Length)
-            return;
+        if (currentSignalIndex >= targets.Length || loadPos == null) return;
 
-        Vector3 loadPosition = GameObject.Find("loadPos").transform.position;
-        Vector3 targetPosition = targets[currentSignalIndex].transform.position;
+        // Calculate the difference between the load's position and the current target area's position
+        Vector3 diff = targets[currentSignalIndex].transform.position - loadPos.position;
+        string wanted = ComputeSignal(diff);
 
-        float xDifference = targetPosition.x - loadPosition.x;
-        float zDifference = targetPosition.z - loadPosition.z;
-        float yDifference = targetPosition.y - loadPosition.y;
-
-        float horizontalTolerance = 0.5f;
-        float verticalTolerance = 0.5f;
-
-        bool xAligned = Mathf.Abs(xDifference) <= horizontalTolerance;
-        bool zAligned = Mathf.Abs(zDifference) <= horizontalTolerance;
-
-        // Final target: only hoist down.
-        if (currentSignalIndex == targets.Length - 1)
+        if (wanted == currentSignal)
         {
-            currentSignal = "Down";
+            // Check if the wanted signal is the same as the current signal. If so, clear the pending signal.
+            pendingSignal = null;
         }
-        // Normal target movement.
-        else if (!xAligned || !zAligned)
+        else if (wanted != pendingSignal)
         {
-            if (xAligned)
-                currentSignal = zDifference > 0 ? "Front" : "Back";
-            else if (zAligned)
-                currentSignal = xDifference > 0 ? "Right" : "Left";
-            else if (Mathf.Abs(xDifference) > Mathf.Abs(zDifference))
-                currentSignal = xDifference > 0 ? "Right" : "Left";
-            else
-                currentSignal = zDifference > 0 ? "Front" : "Back";
+            // If the wanted signal is different from the current signal and also different from the pending signal, set it as the new pending signal and start the timer.
+            pendingSignal = wanted;
+            pendingSignalTimer = Time.time; // Start the timer for the pending signal
         }
-        else if (Mathf.Abs(yDifference) > verticalTolerance)
+        else if (Time.time - pendingSignalTimer >= signalStayTime)
         {
-            currentSignal = yDifference > 0 ? "Up" : "Down";
+            // If the pending signal has been held for the required time, update the current signal to the pending signal.
+            currentSignal = wanted;
+            pendingSignal = null;
         }
 
         signalmanSignal.text = currentSignal;
     }
 
+    string ComputeSignal(Vector3 diff)
+    {
+        const float tolerance = 0.5f;
+
+        // If the crane is at the first or last target area, return "Up" or "Down" respectively
+        if (currentSignalIndex == 0) return "Up";
+        if (currentSignalIndex == targets.Length - 1) return "Down";
+
+        bool xAligned = Mathf.Abs(diff.x) <= tolerance;
+        bool zAligned = Mathf.Abs(diff.z) <= tolerance;
+
+        // Check if the load is aligned with either the x or z axis of the target area, and return the appropriate signal
+        if (!xAligned || !zAligned)
+        {
+            // Determine which axis the load is more misaligned
+            bool useX;
+            if (xAligned) useX = false;
+            else if (zAligned) useX = true;
+            else
+            {
+                Debug.LogWarning("Unable to determine which axis to use for signal calculation. Defaulting to x-axis.");
+                useX = true;
+            }
+            return useX ? (diff.x > 0 ? "Right" : "Left")
+                        : (diff.z > 0 ? "Front" : "Back");
+        }
+
+        if (Mathf.Abs(diff.y) > tolerance) return diff.y > 0 ? "Up" : "Down";
+        return currentSignal; // If the load is aligned with the target area, return the current signal
+    }
+
+    /// <summary>
+    /// Shows or hides the current target area based on whether the load is attached and the current signal index.
+    /// </summary>
+    /// <param name="show"></param>
     void ShowTarget(bool show)
     {
         // Hide all target areas initially

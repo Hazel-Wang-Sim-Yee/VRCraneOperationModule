@@ -15,21 +15,24 @@ public class CraneSequence : MonoBehaviour
     [SerializeField] List<Button> buttons = new List<Button>(); // Array of buttons to be activated/deactivated
 
     [Header("Target Tracking")]
-    string currentSignal; // Current signal from the signalman
-    public bool changedTarget = false; // Flag to indicate if the target has changed
     public bool isCraneMoving = false; // Flag to indicate if the crane is moving
 
     [Header("Operation State")]
     public bool hasOperationStarted = false; // Flag to indicate if the crane operation has started
     XRGrabInteractable loadInteractable; // Reference to the XRGrabInteractable component of the load
-    LoadHookSettings loadHookSettings; // Reference to the LoadHookSettings script to manage the load's state
+
+    [Header("Script References")]
+    [SerializeField] LoadHookSettings loadHookSettings; // Reference to the LoadHookSettings script to manage the load's state
     
     void Start()
     {
-        loadHookSettings = FindObjectOfType<LoadHookSettings>();
         if (loadHookSettings == null)
         {
-            Debug.LogError("LoadHookSettings script not found in the scene. Please ensure it is attached to a GameObject.");
+            loadHookSettings = FindObjectOfType<LoadHookSettings>();
+            if (loadHookSettings == null)
+            {
+                Debug.LogError("LoadHookSettings script not found in the scene. Please ensure it is attached to a GameObject.");
+            }
         }
         
         // Auto-find might be broken at times so assign the buttons manually in the inspector to prevent issues.
@@ -53,10 +56,6 @@ public class CraneSequence : MonoBehaviour
 
     void Update()
     {
-        if (!hasOperationStarted)
-        {
-            SignalmanManager.instance.currentSignalIndex = 0; // Reset the current signal index if the operation has not started
-        }
         if (SignalmanManager.instance.currentSignalIndex == 0 || SignalmanManager.instance.currentSignalIndex == SignalmanManager.instance.targets.Length - 1)
         {
             ActivateButtons(true); // Enable hoisting buttons if the crane is at the first or last target area
@@ -93,7 +92,7 @@ public class CraneSequence : MonoBehaviour
     public void SetCraneMovingState()
     {
         // If crane already moved once and the operation has not started, set the operation as started
-        if (isCraneMoving && !hasOperationStarted)
+        if (!isCraneMoving && !hasOperationStarted)
         {
             hasOperationStarted = true;
             // Lock the load to not allow the player to interact with it throughout the operation

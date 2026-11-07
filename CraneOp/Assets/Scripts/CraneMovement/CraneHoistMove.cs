@@ -16,7 +16,7 @@ public class CraneHoistMove : MonoBehaviour
         Down
     }
     public bool isMoving = false;
-    float moveSpeed = 1f;
+    [SerializeField] float moveSpeed = 1f;
     Vector3 targetPosition;
     [SerializeField] Transform trolley;
     public bool isHoistUp = false;
@@ -35,6 +35,9 @@ public class CraneHoistMove : MonoBehaviour
 
     [Header("Load Position Settings")]
     [SerializeField] Transform loadPosition;
+
+    [Header("Script References")]
+    [SerializeField] LoadHookSettings loadHookSettings;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -64,6 +67,10 @@ public class CraneHoistMove : MonoBehaviour
         Vector3 loadPos = loadPosition.position;
         loadPos.x = trolley.position.x;
         loadPos.z = trolley.position.z;
+        if (loadHookSettings.load != null)
+        {
+            loadPos.y = loadHookSettings.load.transform.position.y; // Keep the load's y position constant
+        }
         loadPosition.position = loadPos;
     }
 

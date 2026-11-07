@@ -18,9 +18,17 @@ public class ColliderDetect : MonoBehaviour
     [Header("Colour Settings")]
     [SerializeField] private Material insideColor;
     [SerializeField] private Material outsideColor;
+
+    private MeshRenderer meshRenderer;
+
+    void Awake()
+    {
+        meshRenderer = GetComponent<MeshRenderer>();
+    }
     
     void Start()
     {
+        StopAllCoroutines(); // Ensure no coroutines are running at the start
         if (craneSequence == null)
         {
             craneSequence = FindObjectOfType<CraneSequence>();
@@ -64,6 +72,10 @@ public class ColliderDetect : MonoBehaviour
     void OnEnable()
     {
         ableToCollide = true;
+        if (CompareTag("CraneDestination") && meshRenderer != null)
+        {
+            meshRenderer.material = outsideColor; // Reset the color of the crane destination to red when enabled
+        }
     }
 
     /// <summary>
@@ -84,11 +96,10 @@ public class ColliderDetect : MonoBehaviour
     {
         if (other.CompareTag("Load") && CompareTag("CraneDestination"))
         {
-            // Indicate that the load is in position and change the color of the crane destination to green.
-            gameObject.GetComponent<MeshRenderer>().material = insideColor;
-            if (craneSequence.changedTarget == true)
+            if (craneSequence.hasOperationStarted)
             {
-                craneSequence.changedTarget = false;
+                // Indicate that the load is in position and change the color of the crane destination to green.
+                meshRenderer.material = insideColor;
             }
         }
         else if (other.CompareTag("Crane"))
@@ -117,12 +128,8 @@ public class ColliderDetect : MonoBehaviour
         }
         if (other.CompareTag("Load") && CompareTag("CraneDestination"))
         {
-            gameObject.GetComponent<MeshRenderer>().material = outsideColor;
-            // Reset the changedTarget flag in the CraneSequence script when the load exits the crane destination trigger.
-            if (craneSequence.changedTarget == true)
-            {
-                craneSequence.changedTarget = false;
-            }
+            // Indicate that the load is no longer in position and change the color of the crane destination to red.
+            meshRenderer.material = outsideColor;
         }
     }
 
@@ -135,10 +142,8 @@ public class ColliderDetect : MonoBehaviour
         }
         if (other.CompareTag("Load") && CompareTag("CraneDestination"))
         {
-            // Check if the crane is moving or not and if its not moving, check if the target has already been changed. If not, change the target to the next area.
-            if (craneSequence.isCraneMoving == false && craneSequence.changedTarget == false)
+            if (craneSequence.hasOperationStarted && craneSequence.isCraneMoving == false)
             {
-                craneSequence.changedTarget = true;
                 SignalmanManager.instance.NextArea();
             }
         }
