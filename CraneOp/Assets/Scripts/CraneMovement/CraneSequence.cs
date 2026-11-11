@@ -8,9 +8,12 @@ using System.Collections.Generic;
 using System.Collections;
 using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.XR.Interaction.Toolkit.Interactables;
+using UnityEngine.Rendering;
 
 public class CraneSequence : MonoBehaviour
 {
+    [SerializeField] Volume dangerZone;
+
     [Header("Controller Buttons (automatically assigned if not set)")]
     [SerializeField] List<Button> buttons = new List<Button>(); // Array of buttons to be activated/deactivated
 
@@ -19,6 +22,7 @@ public class CraneSequence : MonoBehaviour
 
     [Header("Operation State")]
     public bool hasOperationStarted = false; // Flag to indicate if the crane operation has started
+    public bool hasOperationCompleted = false; // Flag to indicate if the crane operation has completed
     XRGrabInteractable loadInteractable; // Reference to the XRGrabInteractable component of the load
 
     [Header("Script References")]
@@ -49,8 +53,10 @@ public class CraneSequence : MonoBehaviour
         ActivateButtons(false); // Disable all buttons at the start of the sequence
         UI.instance.controllerCanvas.gameObject.SetActive(false);
 
+        dangerZone.weight = 0; // Disable the danger zone at the start of the sequence
         // Subscribe to the load loaded and sequence complete events to manage the load's interactable state
-        Events.Instance.onLoadLoaded += () => {loadInteractable = loadHookSettings.load.GetComponent<XRGrabInteractable>(); SignalmanManager.instance.currentSignalIndex = 0;};
+        Events.Instance.onLoadLoaded += () => {loadInteractable = loadHookSettings.load.GetComponent<XRGrabInteractable>(); SignalmanManager.instance.currentSignalIndex = 0; dangerZone.weight = 1;};
+        Events.Instance.onLoadUnloaded += () => {dangerZone.weight = 0;};
         Events.Instance.onSequenceComplete += CompleteOperation;
     }
 
@@ -89,16 +95,16 @@ public class CraneSequence : MonoBehaviour
     /// <summary>
     /// Sets the state of the crane's movement.
     /// </summary>
-    public void SetCraneMovingState()
+    public void SetCraneMovingState(bool moving)
     {
+        isCraneMoving = moving;
         // If crane already moved once and the operation has not started, set the operation as started
-        if (!isCraneMoving && !hasOperationStarted)
+        if (isCraneMoving && !hasOperationStarted)
         {
             hasOperationStarted = true;
             // Lock the load to not allow the player to interact with it throughout the operation
             loadInteractable.interactionLayers = InteractionLayerMask.GetMask("LockedLoad");
         }
-        isCraneMoving = !isCraneMoving;
     }
 
     /// <summary>
@@ -106,6 +112,7 @@ public class CraneSequence : MonoBehaviour
     /// </summary>
     void CompleteOperation()
     {
+        hasOperationCompleted = true;
         loadInteractable.interactionLayers = InteractionLayerMask.GetMask("Load");
         UI.instance.finalScoreCanvas.gameObject.SetActive(true);
         UI.instance.UpdateScoreText("CollisionStat", FindObjectOfType<CollisionManager>().totalCollisions, "Total Collisions");

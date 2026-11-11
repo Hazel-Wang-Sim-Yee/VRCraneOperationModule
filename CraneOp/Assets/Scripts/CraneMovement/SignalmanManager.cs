@@ -10,6 +10,7 @@ using System.Collections;
 
 public class SignalmanManager : MonoBehaviour
 {
+    float timeElapsed = 0f;
     public static SignalmanManager instance;
 
     [Header("Signalman Settings")]
@@ -80,7 +81,9 @@ public class SignalmanManager : MonoBehaviour
         }
 
         FindSignalDirection();
-
+        if (craneSequence.hasOperationCompleted) return; // Stop updating the time and incorrect signals if the operation is complete
+        timeElapsed += Time.deltaTime;
+        UI.instance.UpdateScoreText("TimeText", (int)timeElapsed, "Time Elapsed");
         UI.instance.UpdateScoreText("IncorrectSignalsText", incorrectSignals, "Incorrect Signals");
     }
     
@@ -150,11 +153,10 @@ public class SignalmanManager : MonoBehaviour
 
     string ComputeSignal(Vector3 diff)
     {
-        const float tolerance = 0.5f;
+        const float tolerance = 1f;
 
         // If the crane is at the first or last target area, return "Up" or "Down" respectively
-        if (currentSignalIndex == 0) return "Up";
-        if (currentSignalIndex == targets.Length - 1) return "Down";
+        if (currentSignalIndex == 0 || currentSignalIndex == targets.Length - 1) return diff.y > 0 ? "Up" : "Down";
 
         bool xAligned = Mathf.Abs(diff.x) <= tolerance;
         bool zAligned = Mathf.Abs(diff.z) <= tolerance;
@@ -198,5 +200,11 @@ public class SignalmanManager : MonoBehaviour
             targets[currentSignalIndex].GetComponent<Collider>().enabled = show;
             targets[currentSignalIndex].SetActive(show);
         }
+    }
+
+    public void CheckSignal(string direction)
+    {
+        if (!craneSequence.hasOperationStarted) return;
+        if (direction != currentSignal) incorrectSignals++;
     }
 }

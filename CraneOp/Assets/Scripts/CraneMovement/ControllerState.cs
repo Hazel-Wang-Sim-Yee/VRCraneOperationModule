@@ -5,14 +5,20 @@
 */
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections.Generic;
 
 public class ControllerState : MonoBehaviour
 {
+    [Header("Colour")]
     [SerializeField] Color activeColor;
     [SerializeField] Color inactiveColor;
+
+    [Header("Button Settings")]
     public bool isButtonPressed = false;
     private string buttonName;
-    [SerializeField] Button[] otherButtons;
+    [SerializeField] List<ControllerState> otherButtonStates;
+
+    [Header("Script References")]
     CraneSequence craneSequence;
     CraneHoistMove craneHoistMove;
 
@@ -21,33 +27,6 @@ public class ControllerState : MonoBehaviour
         craneSequence = FindObjectOfType<CraneSequence>();
         craneHoistMove = FindObjectOfType<CraneHoistMove>();
         buttonName = gameObject.name;
-        if (buttonName == "Left")
-        {
-            Events.Instance.onMoveLeft += ToggleButtonState;
-        }
-        else if (buttonName == "Right")
-        {
-            Events.Instance.onMoveRight += ToggleButtonState;
-        }
-        else if (buttonName == "Front")
-        {
-            Events.Instance.onMoveFront += ToggleButtonState;
-        }
-        else if (buttonName == "Back")
-        {
-            Events.Instance.onMoveBack += ToggleButtonState;
-        }
-        else if (buttonName == "Up")
-        {
-            Events.Instance.onHoistUp += ToggleButtonState;
-        }
-        else if (buttonName == "Down")
-        {
-            Events.Instance.onHoistDown += ToggleButtonState;
-        } else
-        {
-            Debug.LogWarning("Button name does not match any expected values: " + buttonName);
-        }
     }
     
     /// <summary>
@@ -57,13 +36,41 @@ public class ControllerState : MonoBehaviour
     /// </summary>
     public void ToggleButtonState()
     {
+        foreach (ControllerState state in otherButtonStates)
+        {
+            if (state.isButtonPressed)
+            {
+                return;
+            }
+        }
         isButtonPressed = !isButtonPressed;
         craneSequence.ActivateButtons(craneHoistMove.isMoving); // Disable movement buttons when hoisting and enable hoist buttons, and vice versa
-        if (isButtonPressed == false)
+        if (isButtonPressed)
+        {
+            switch (buttonName)
+            {
+                case "Left":  Events.Instance.MoveLeft();  break;   // use your real Events method names
+                case "Right": Events.Instance.MoveRight(); break;
+                case "Front": Events.Instance.MoveFront(); break;
+                case "Back":  Events.Instance.MoveBack();  break;
+                case "Up":    Events.Instance.HoistUp();   break;
+                case "Down":  Events.Instance.HoistDown(); break;
+            }
+            
+            UpdateButtonColor();
+            craneSequence.SetCraneMovingState(true);
+            SignalmanManager.instance.CheckSignal(buttonName);
+        }
+        else if (isButtonPressed == false)
         {
             Events.Instance.StopMovement();
+            UpdateButtonColor();
+            craneSequence.SetCraneMovingState(false);
         }
-        UpdateButtonColor();
+        else
+        {
+            Debug.LogError("isButtonPressed has an invalid state.");
+        }
     }
 
     /// <summary>

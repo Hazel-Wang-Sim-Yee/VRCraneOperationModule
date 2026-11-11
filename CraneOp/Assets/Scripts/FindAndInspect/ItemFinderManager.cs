@@ -1,6 +1,7 @@
 /*
     This script is responsible for managing the item finding process in the game.
     It keeps track of the items to be found, updates the UI, and provides feedback when an item is found.
+    It also help to draw a line from the player to the current item to find.
 */
 using UnityEngine;
 using UnityEngine.UI;
@@ -23,6 +24,11 @@ public class ItemFinderManager : MonoBehaviour
     public TextMeshProUGUI itemNameText;
     public Image[] defectImages;
     public TextMeshProUGUI[] checklistItemsText;
+    [SerializeField] bool hasStartedFinding = false;
+
+    [Header("Player Settings")]
+    [SerializeField] GameObject player;
+    [SerializeField] LineRenderer lineRenderer;
 
     void Awake()
     {
@@ -65,6 +71,31 @@ public class ItemFinderManager : MonoBehaviour
     void Start()
     {
         StopAllCoroutines(); // Stop any existing coroutines to prevent conflicts
+
+        // Check if the player and line renderer are assigned
+        if (player == null)
+        {
+            Debug.LogError("Player object not found. Please assign the player object in the inspector.");
+        }
+        if (lineRenderer == null)
+        {
+            Debug.LogError("LineRenderer component not found. Please assign the LineRenderer component in the inspector.");
+        }
+    }
+
+    void Update()
+    {
+        if (hasStartedFinding)
+        {
+            lineRenderer.positionCount = 2;
+            Vector3 playerPosition = player.transform.position;
+            playerPosition.y -= 0.1f; // Adjust the y position to be slightly below the player
+            lineRenderer.SetPosition(0, playerPosition);
+            lineRenderer.SetPosition(1, itemsToFind[currentItemIndex].transform.position);
+        } else
+        {
+            lineRenderer.positionCount = 0; // Disable the line renderer
+        }
     }
 
     /// <summary>
@@ -72,6 +103,10 @@ public class ItemFinderManager : MonoBehaviour
     /// </summary>
     public void UpdateCurrentItem()
     {
+        if (!hasStartedFinding)
+        {
+            hasStartedFinding = true;
+        }
         itemsToFind[currentItemIndex].GetComponent<ItemFinder>().enabled = true;
         itemsToFind[currentItemIndex].GetComponent<ItemFinder>().LoadItem();
     }

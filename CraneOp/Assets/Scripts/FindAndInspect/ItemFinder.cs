@@ -66,10 +66,28 @@ public class ItemFinder : MonoBehaviour
     void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Player"))
-        // Check if the inspection panel is open, if it is, do not show the find button
-        if (!ItemFinderManager.Instance.itemInspectionImage.gameObject.activeSelf)
         {
-            ItemFinderManager.Instance.findButton.gameObject.SetActive(true);
+            // Check if the inspection panel is open, if it is, do not show the find button
+            if (!ItemFinderManager.Instance.itemInspectionImage.gameObject.activeSelf)
+            {
+                ItemFinderManager.Instance.findButton.gameObject.SetActive(true);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Fallback check to ensure that the find button was shown
+    /// </summary>
+    /// <param name="other"></param>
+    void OnTriggerStay(Collider other)
+    {
+        if (other.CompareTag("Player"))
+        {
+            // Check if the inspection panel is open, if it is, do not show the find button
+            if (!ItemFinderManager.Instance.itemInspectionImage.gameObject.activeSelf)
+            {
+                ItemFinderManager.Instance.findButton.gameObject.SetActive(true);
+            }
         }
     }
 
@@ -88,7 +106,10 @@ public class ItemFinder : MonoBehaviour
         itemTriggerCollider.enabled = false;
 
         // Change the item's material to the highlight material
+        if (GetComponent<Renderer>() != null)
         GetComponent<Renderer>().material = ItemFinderManager.Instance.highlightMaterial;
+        else
+        Highlight();
         ItemFinderManager.Instance.findButton.gameObject.SetActive(false);
 
         // Reset the defect images in the UI to null to clear the previous item's defects
@@ -100,5 +121,18 @@ public class ItemFinder : MonoBehaviour
         ItemFinderManager.Instance.UpdateChecklist();
         UI.instance.UpdateFeedbackText("Item completed: " + itemName);
         this.enabled = false;
+    }
+
+    /// <summary>
+    /// Highlight all child of the component when found
+    /// </summary>
+    void Highlight()
+    {
+        Material highlight = ItemFinderManager.Instance.highlightMaterial;
+
+        foreach (Renderer r in GetComponentsInChildren<Renderer>())
+        {
+            r.material = highlight;
+        }
     }
 }

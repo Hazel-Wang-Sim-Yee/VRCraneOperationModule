@@ -63,10 +63,7 @@ public class CraneMove : MonoBehaviour
                 destination.z = GameObject.Find("FrontBoundary").transform.position.z;
                 break;
         }
-        if (SignalmanManager.instance.currentSignal != direction.ToString())
-        {
-            SignalmanManager.instance.incorrectSignals++;
-        }
+
         // Sets the target position to the calculated destination
         targetPosition = destination;
         isMoving = true;
@@ -76,27 +73,10 @@ public class CraneMove : MonoBehaviour
     public void MoveBack()
     {
         MoveToTarget(Direction.Back);
-        // Prevent the incorrect signal count from counting twice when the button is pressed and released
-        if (GameObject.Find("Back").GetComponent<ControllerState>().isButtonPressed == true)
-        {
-            if (SignalmanManager.instance.currentSignal != Direction.Back.ToString())
-            {
-                SignalmanManager.instance.incorrectSignals--;
-            }
-        }
     }
     public void MoveFront()
     {
         MoveToTarget(Direction.Front);
-
-        // Prevent the incorrect signal count from counting twice when the button is pressed and released
-        if (GameObject.Find("Front").GetComponent<ControllerState>().isButtonPressed == true)
-        {
-            if (SignalmanManager.instance.currentSignal != Direction.Front.ToString())
-            {
-                SignalmanManager.instance.incorrectSignals--;
-            }
-        }
     }
     public void StopMovement()
     {

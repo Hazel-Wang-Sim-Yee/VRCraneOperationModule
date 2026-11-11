@@ -72,10 +72,7 @@ public class CraneObjectMove : MonoBehaviour
                 destination.x = GameObject.Find("RightBoundary").transform.position.x;
                 break;
         }
-        if (SignalmanManager.instance.currentSignal != direction.ToString())
-        {
-            SignalmanManager.instance.incorrectSignals++;
-        }
+
         // Sets the target position to the calculated destination
         targetPosition = destination;
         isMoving = true;
@@ -85,26 +82,10 @@ public class CraneObjectMove : MonoBehaviour
     public void MoveLeft()
     {
         MoveToTarget(Direction.Left);
-        // Prevent the incorrect signal count from counting twice when the button is pressed and released
-        if (GameObject.Find("Left").GetComponent<ControllerState>().isButtonPressed == true)
-        {
-            if (SignalmanManager.instance.currentSignal != Direction.Left.ToString())
-            {
-                SignalmanManager.instance.incorrectSignals--;
-            }
-        }
     }
     public void MoveRight()
     {
         MoveToTarget(Direction.Right);
-        // Prevent the incorrect signal count from counting twice when the button is pressed and released
-        if (GameObject.Find("Right").GetComponent<ControllerState>().isButtonPressed == true)
-        {
-            if (SignalmanManager.instance.currentSignal != Direction.Right.ToString())
-            {
-                SignalmanManager.instance.incorrectSignals--;
-            }
-        }
     }
     public void StopMovement()
     {

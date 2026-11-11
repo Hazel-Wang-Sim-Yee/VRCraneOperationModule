@@ -5,6 +5,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.Collections;
+using UnityEngine.UI;
 
 // Runs after CraneMove and CraneObjectMove each physics step, so the trolley has already moved.
 [DefaultExecutionOrder(0)]
@@ -35,6 +36,10 @@ public class CraneHoistMove : MonoBehaviour
 
     [Header("Load Position Settings")]
     [SerializeField] Transform loadPosition;
+
+    [Header("Buttons")]
+    [SerializeField] Button upButton;
+    [SerializeField] Button downButton;
 
     [Header("Script References")]
     [SerializeField] LoadHookSettings loadHookSettings;
@@ -125,47 +130,49 @@ public class CraneHoistMove : MonoBehaviour
         switch (direction)
         {
             case Direction.Up:
-                destination.y = GameObject.Find("HoistUp").transform.position.y;
-                isHoistUp = true;
+                if (GameObject.Find("HoistUp") != null)
+                {
+                    destination.y = GameObject.Find("HoistUp").transform.position.y;   
+                    isHoistUp = true;
+                } else
+                {
+                    Debug.Log("Unable to find HoistUp destination");
+                }
                 break;
 
             case Direction.Down:
-                destination.y = GameObject.Find("HoistDown").transform.position.y;
-                isHoistUp = false;
+                if (GameObject.Find("HoistDown") != null)
+                {
+                    destination.y = GameObject.Find("HoistDown").transform.position.y;
+                    isHoistUp = false;
+                } else
+                {
+                    Debug.Log("Unable to find HoistDown destination");
+                }
                 break;
         }
-
-        if (SignalmanManager.instance.currentSignal != direction.ToString())
-        {
-            SignalmanManager.instance.incorrectSignals++;
-        }
+        
         // Set the target position to the calculated destination
         targetPosition = destination;
         isMoving = true;
     }
     public void HoistUp()
     {
-        MoveToTarget(Direction.Up);
-        // Prevent the incorrect signal count from counting twice when the button is pressed and released
-        if (GameObject.Find("Up").GetComponent<ControllerState>().isButtonPressed == true)
+        if (upButton == null)
         {
-            if (SignalmanManager.instance.currentSignal != Direction.Up.ToString())
-            {
-                SignalmanManager.instance.incorrectSignals--;
-            }
+            Debug.Log("Up button not assigned.");
+            return;
         }
+        MoveToTarget(Direction.Up);
     }
     public void HoistDown()
     {
-        MoveToTarget(Direction.Down);
-        // Prevent the incorrect signal count from counting twice when the button is pressed and released
-        if (GameObject.Find("Down").GetComponent<ControllerState>().isButtonPressed == true)
+        if (downButton == null)
         {
-            if (SignalmanManager.instance.currentSignal != Direction.Down.ToString())
-            {
-                SignalmanManager.instance.incorrectSignals--;
-            }
+            Debug.Log("Down button not assigned.");
+            return;
         }
+        MoveToTarget(Direction.Down);
     }
     void StopMovement()
     {

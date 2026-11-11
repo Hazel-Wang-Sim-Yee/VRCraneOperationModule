@@ -106,6 +106,7 @@ public class ColliderDetect : MonoBehaviour
         {
             Events.Instance.StopMovement();
         }
+        /* For physics-based rope
         if (other.CompareTag("Rope") && gameObject.name == "RopeGone")
         {
             // When the rope is goes up past a certain point, the rope mesh renderer is disabled to make it invisible.
@@ -113,7 +114,7 @@ public class ColliderDetect : MonoBehaviour
             MeshRenderer ropeChildRenderer = other.transform.GetChild(0).GetComponent<MeshRenderer>();
             ropeRenderer.enabled = false;
             ropeChildRenderer.enabled = false;
-        }
+        }*/
     }
 
     void OnTriggerExit(Collider other)
@@ -142,9 +143,13 @@ public class ColliderDetect : MonoBehaviour
         }
         if (other.CompareTag("Load") && CompareTag("CraneDestination"))
         {
-            if (craneSequence.hasOperationStarted && craneSequence.isCraneMoving == false)
+            if (craneSequence.hasOperationStarted)
             {
-                SignalmanManager.instance.NextArea();
+                meshRenderer.material = insideColor; // Change the color of the crane destination to green when the load is in position
+                if (craneSequence.isCraneMoving == false)
+                {
+                   SignalmanManager.instance.NextArea(); // Move on to the next area if the crane is not moving and the load is in position
+                }
             }
         }
     }

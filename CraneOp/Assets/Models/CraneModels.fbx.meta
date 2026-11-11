@@ -3,7 +3,177 @@ guid: 85c052d299692eb46852af592a3b4c30
 ModelImporter:
   serializedVersion: 24600
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: atlasMetalPaintedMetal
+    second: {fileID: 2100000, guid: 5d9d372163ce933499012f0334f44044, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: bikeAtlas
+    second: {fileID: 2100000, guid: 668ea37cdb9db5449b29a37eb9dfe525, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: classroom1NoLight
+    second: {fileID: 2100000, guid: 93e2431e0a9dcc5468498c8fcb596bae, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: dirtyMetalContainer
+    second: {fileID: 2100000, guid: 221d6594adf35324dabb29080aa3330a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: opacityStuff
+    second: {fileID: 2100000, guid: 291a7e9e290c55f4086af19732c36ec5, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: road2
+    second: {fileID: 2100000, guid: 43b7dd9bdfbd4a345abbfd0b4820e821, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: road3
+    second: {fileID: 2100000, guid: d372f7dbe79e0f74aa3d15031e50813b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: wareHouseAtlas
+    second: {fileID: 2100000, guid: 72a28712ca1da0e4b9bf739648240467, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: wareHouseHybrid
+    second: {fileID: 2100000, guid: 09e2b7ba76b67fd489e242a8b9a4d325, type: 2}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Gradient Pallete
+    second: {fileID: 2800000, guid: 352cd2b28aa0b634693a2042d698becf, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: atlasSheetHybridX6_standardSurface1_AlbedoTransparency.1001
+    second: {fileID: 2800000, guid: 44baea7e6961cf34cafc37660569a437, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: atlasSheetHybridX6_standardSurface1_Emission.1001
+    second: {fileID: 2800000, guid: aa504f2a6c9e16340a407ddf57b32d3b, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: atlasSheetHybridX6_standardSurface1_Normal.1001
+    second: {fileID: 2800000, guid: 93c5479c90efa6b4bb309ad2ee213842, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: atlasSheetHybridX9_standardSurface1_AlbedoTransparency.1001
+    second: {fileID: 2800000, guid: ec5813e2a4cdfe0448e96ba8a439f191, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: atlasSheetHybridX9_standardSurface1_Emission.1001
+    second: {fileID: 2800000, guid: ec9d13433800f2648b49c99b17862222, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: atlasSheetHybridX9_standardSurface1_Normal.1001
+    second: {fileID: 2800000, guid: 7ba7b7687443ec645a79046325ef7b95, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: atlasX4_standardSurface1_AlbedoTransparency.1001
+    second: {fileID: 2800000, guid: d68ddc2e578024440bc13a6d3365314e, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: atlasX4_standardSurface1_Emission.1001
+    second: {fileID: 2800000, guid: 030824d1bb9e7ef47824e21e1cdfbfc5, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: atlasX4_standardSurface1_Normal.1001
+    second: {fileID: 2800000, guid: d79c7e6fcac871a4fa241a03377e7bdf, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: classroomHybrid_standardSurface1_AlbedoTransparency.1001
+    second: {fileID: 2800000, guid: cbaedfe5f4097da4192be29714bf6f25, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: classroomHybrid_standardSurface1_Emission.1001
+    second: {fileID: 2800000, guid: 315e5379925330045a3a416a70198881, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: classroomHybrid_standardSurface1_Normal.1001
+    second: {fileID: 2800000, guid: a706f575a5fdfe3499cb8ee10563aca1, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: lowPoly_standardSurface1_AlbedoTransparency.1001
+    second: {fileID: 2800000, guid: c6eda4ca42c941249ba66621af536784, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: lowPoly_standardSurface1_Emission.1001
+    second: {fileID: 2800000, guid: e829afe7c8c930540b2cd73151877e86, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: lowPoly_standardSurface1_Normal.1001
+    second: {fileID: 2800000, guid: ff86024e84be3e24aa7bdc61f4532497, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: road2_standardSurface1_AlbedoTransparency.1001
+    second: {fileID: 2800000, guid: ac103851ac6361448beef1529eaa8f70, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: road2_standardSurface1_Emission.1001
+    second: {fileID: 2800000, guid: a0b2faa57e7c24245b8eb6edacf33fd2, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: road2_standardSurface1_Normal.1001
+    second: {fileID: 2800000, guid: 5a0ce82f9acc51b45a6962c8eae6fc8e, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: trimSheetX6_standardSurface1_AlbedoTransparency.1001
+    second: {fileID: 2800000, guid: 6ce19a0b47ed5214aaa9238ed552015a, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: trimSheetX6_standardSurface1_Emission.1001
+    second: {fileID: 2800000, guid: 4b1c7eb4ed72ac24a9f5a1f8ed0f7e22, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: trimSheetX6_standardSurface1_Normal.1001
+    second: {fileID: 2800000, guid: f11292b5890096b4eb5527744e72493b, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: trimSheetX9_standardSurface1_AlbedoTransparency.1001
+    second: {fileID: 2800000, guid: 34861c262ba2ca44a90ee6388ddf7250, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: trimSheetX9_standardSurface1_Emission.1001
+    second: {fileID: 2800000, guid: 5cd6e9796cf8695469576ba42bee6f32, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: trimSheetX9_standardSurface1_Normal.1001
+    second: {fileID: 2800000, guid: 6d13e035a2a40ef4ba746fb1ffdcfaee, type: 3}
   materials:
     materialImportMode: 2
     materialName: 0
@@ -39,7 +209,7 @@ ModelImporter:
     addColliders: 0
     useSRGBMaterialColor: 1
     sortHierarchyByName: 1
-    preBakeConvexCollisionMesh: 0
+    preBakeConvexCollisionMesh: 1
     preBakeTriangleCollisionMesh: 0
     importPhysicalCameras: 1
     importVisibility: 1

@@ -27,6 +27,7 @@ public class CraneLoad : MonoBehaviour
     [Tooltip("Tick to set the centre of mass yourself (useful for lopsided loads). Otherwise Unity works it out from the colliders.")]
     [SerializeField] bool overrideCenterOfMass = false;
     [SerializeField] Vector3 localCenterOfMass;
+    public float massMultiplier = 1f; // Multiplier to adjust the mass of the load dynamically
 
     public Rigidbody Body { get; private set; }
     public Transform LiftingPoint => liftingPoint != null ? liftingPoint : transform;
@@ -57,7 +58,7 @@ public class CraneLoad : MonoBehaviour
 
         if (loadInfoCanvas != null)
         {
-            loadInfoCanvas.GetComponentInChildren<TextMeshProUGUI>().text = $"Type: {loadType}\nWeight: {mass:0.#} kg";
+            loadInfoCanvas.GetComponentInChildren<TextMeshProUGUI>().text = $"Type: {loadType}\nWeight: {mass * massMultiplier:0.#} kg";
         }
         if (lineRenderer == null)
         {

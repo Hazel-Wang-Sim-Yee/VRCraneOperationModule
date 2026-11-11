@@ -81,7 +81,7 @@ public class LoadHookSettings : MonoBehaviour
     {
         if (candidate == null) return true;
         var rb = candidate.GetComponent<Rigidbody>();
-        return rb == null || rb.mass <= ratedCapacityKg;
+        return rb == null || rb.mass * candidate.GetComponent<CraneLoad>().massMultiplier <= ratedCapacityKg;
     }
 
     void OnTriggerEnter(Collider other)
@@ -121,7 +121,7 @@ public class LoadHookSettings : MonoBehaviour
             float mass = load.GetComponent<Rigidbody>().mass;
             if (UI.instance != null)
                 UI.instance.UpdateFeedbackText(
-                    $"This load is too heavy to lift ({mass:0.#} kg). The crane's limit is {ratedCapacityKg:0.#} kg."
+                    $"This load is too heavy to lift ({mass * load.GetComponent<CraneLoad>().massMultiplier:0.#} kg). The crane's limit is {ratedCapacityKg:0.#} kg."
                 );
             return;
         } else
