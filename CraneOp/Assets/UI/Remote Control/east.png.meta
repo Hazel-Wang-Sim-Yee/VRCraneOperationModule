@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: dceb001cddda0654e84df3a1832fdb8f
+guid: 15d991c8f82131847be3548cf08e39cc
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -2690792559708188323
-    second: front_0
+      213: -2582826419240090056
+    second: Crane_Remote_Buttons__4_-removebg-preview_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -102,7 +102,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: front_0
+      name: Crane_Remote_Buttons__4_-removebg-preview_0
       rect:
         serializedVersion: 2
         x: 0
@@ -117,8 +117,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: d5154526c6268aad0800000000000000
-      internalID: -2690792559708188323
+      spriteID: 83643bc5e05f72cd0800000000000000
+      internalID: -2582826419240090056
       vertices: []
       indices: 
       edges: []

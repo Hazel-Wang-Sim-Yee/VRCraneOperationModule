@@ -15,12 +15,14 @@ public class CraneSequence : MonoBehaviour
     [SerializeField] Volume dangerZone;
 
     [Header("Controller Buttons (automatically assigned if not set)")]
-    [SerializeField] List<Button> buttons = new List<Button>(); // Array of buttons to be activated/deactivated
+    public List<Button> buttons = new List<Button>(); // Array of buttons to be activated/deactivated
 
     [Header("Target Tracking")]
     public bool isCraneMoving = false; // Flag to indicate if the crane is moving
 
     [Header("Operation State")]
+    public bool startButtonPressed = false; // Flag to indicate if the start button has been pressed
+    public bool isHookReady = false;
     public bool hasOperationStarted = false; // Flag to indicate if the crane operation has started
     public bool hasOperationCompleted = false; // Flag to indicate if the crane operation has completed
     XRGrabInteractable loadInteractable; // Reference to the XRGrabInteractable component of the load
@@ -50,8 +52,10 @@ public class CraneSequence : MonoBehaviour
             buttons.Add(GameObject.Find("Down").GetComponent<Button>());
         }
 
-        ActivateButtons(false); // Disable all buttons at the start of the sequence
-        UI.instance.controllerCanvas.gameObject.SetActive(false);
+        foreach (Button button in buttons)
+        {
+            button.interactable = false; // Disable all buttons at the start of the sequence
+        }
 
         dangerZone.weight = 0; // Disable the danger zone at the start of the sequence
         // Subscribe to the load loaded and sequence complete events to manage the load's interactable state
@@ -62,12 +66,16 @@ public class CraneSequence : MonoBehaviour
 
     void Update()
     {
+        // If the load is not attached or the start button has not been pressed, return early to prevent further processing
+        if (!SignalmanManager.instance.isLoadAttached) return;
+        if (!startButtonPressed) return;
+
         if (SignalmanManager.instance.currentSignalIndex == 0 || SignalmanManager.instance.currentSignalIndex == SignalmanManager.instance.targets.Length - 1)
         {
-            ActivateButtons(true); // Enable hoisting buttons if the crane is at the first or last target area
+            ActivateHoistButtons(true); // Enable hoisting buttons if the crane is at the last target area
         } else
         {
-            ActivateButtons(false); // Disable hoisting buttons if the crane is not at the first or last target area
+            ActivateHoistButtons(false); // Disable hoisting buttons if the crane is not at the first or last target area
         }
     }
 
@@ -77,7 +85,7 @@ public class CraneSequence : MonoBehaviour
     /// If the crane is not hoisting, it enables movement buttons and disables hoist buttons.
     /// </summary>
     /// <param name="isHoisting"></param>
-    public void ActivateButtons(bool isHoisting)
+    public void ActivateHoistButtons(bool isHoisting)
     {
         for (int i = 0; i < buttons.Count; i++)
         {
@@ -98,12 +106,15 @@ public class CraneSequence : MonoBehaviour
     public void SetCraneMovingState(bool moving)
     {
         isCraneMoving = moving;
+        if (!isHookReady) return;
         // If crane already moved once and the operation has not started, set the operation as started
-        if (isCraneMoving && !hasOperationStarted)
+        if (isCraneMoving && hasOperationStarted)
         {
-            hasOperationStarted = true;
             // Lock the load to not allow the player to interact with it throughout the operation
             loadInteractable.interactionLayers = InteractionLayerMask.GetMask("LockedLoad");
+        } else
+        {
+            loadInteractable.interactionLayers = InteractionLayerMask.GetMask("Load");
         }
     }
 
@@ -117,5 +128,41 @@ public class CraneSequence : MonoBehaviour
         UI.instance.finalScoreCanvas.gameObject.SetActive(true);
         UI.instance.UpdateScoreText("CollisionStat", FindObjectOfType<CollisionManager>().totalCollisions, "Total Collisions");
         UI.instance.UpdateScoreText("WrongSignalStat", SignalmanManager.instance.incorrectSignals, "Wrong Signals");
+    }
+
+
+    /// <summary>
+    /// Starts the crane operation when the start button is pressed.
+    /// If the start button is pressed, it enables the hoisting buttons if the hook is not ready.
+    /// </summary>
+    public void StartOperation(bool start)
+    {
+        startButtonPressed = start;
+        if (startButtonPressed)
+        {
+            hasOperationStarted = true; // Set the operation state to started when the start button is pressed
+            if (!isHookReady)
+            {
+                ActivateHoistButtons(true); // Enable hoisting buttons if the hook is not ready
+            }
+        } else
+        {
+            EnableAllButtons(false); // Disable all buttons if the start button is not pressed
+            hasOperationStarted = false; // Reset the operation state if the start button is not pressed
+        }
+
+        UI.instance.UpdateFeedbackText(startButtonPressed ? "Operation Started!" : "Operation Stopped!");
+    }
+    
+    /// <summary>
+    /// Enables or disables all buttons in the crane sequence.
+    /// </summary>
+    /// <param name="enable"></param>
+    public void EnableAllButtons(bool enable)
+    {
+        foreach (Button button in buttons)
+        {
+            button.interactable = enable;
+        }
     }
 }

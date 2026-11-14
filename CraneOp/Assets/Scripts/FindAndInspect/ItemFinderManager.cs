@@ -11,6 +11,10 @@ using System.Collections;
 
 public class ItemFinderManager : MonoBehaviour
 {
+    [Header("Game State")]
+    [SerializeField] bool hasStartedFinding = false;
+    [SerializeField] bool isFindingDefects = false; // Flag to indicate if the player is currently finding defects
+
     [Header("Singleton")]
     public static ItemFinderManager Instance { get; private set; }
 
@@ -20,11 +24,15 @@ public class ItemFinderManager : MonoBehaviour
     public int currentItemIndex = 0;
     public Button findButton;
     public Image itemInspectionImage;
-    public Material highlightMaterial;
     public TextMeshProUGUI itemNameText;
     public Image[] defectImages;
     public TextMeshProUGUI[] checklistItemsText;
-    [SerializeField] bool hasStartedFinding = false;
+
+    [Header("Highlight Settings")]
+    public Material highlightMaterial;
+
+    [Header("Defect Settings")]
+    public Button[] defectButtons; // Array of buttons to be updated with possible defects for the current item
 
     [Header("Player Settings")]
     [SerializeField] GameObject player;
@@ -45,25 +53,35 @@ public class ItemFinderManager : MonoBehaviour
         for (int i = 0; i < itemsToFind.Length; i++)
         {
             itemsToFind[i].GetComponent<ItemFinder>().enabled = false;
-            itemsToFind[i].GetComponent<ItemFinder>().itemTriggerCollider.enabled = false;
+            foreach (Collider collider in itemsToFind[i].GetComponent<ItemFinder>().itemTriggerColliders)
+            {
+                if (collider != null)
+                {
+                    collider.enabled = false;
+                }
+            }
         }
         findButton.gameObject.SetActive(false);
-
-        // Check if the checklist items text length matches the number of items to find
-        if (itemsToFind.Length != checklistItemsText.Length)
-        {
-            Debug.LogWarning("Checklist items text length does not match the number of items to find.");
-        }
-        else if (itemsToFind.Length == 0)
+        
+        if (itemsToFind.Length == 0)
         {
             Debug.LogWarning("No items to find!");
         }
         else
         {
-            // If the lengths match, set the checklist items text to the names of the items to find
-            for (int i = 0; i < itemsToFind.Length; i++)
+            //For each item to find, update the checklist items text with the item name
+            for (int i = 0; i < checklistItemsText.Length; i++)
             {
-                checklistItemsText[i].text = i+1 + ". " + itemsToFind[i].GetComponent<ItemFinder>().itemName;
+                // Check if the current index is less than the number of items to find to avoid index out of range errors
+                if (i < itemsToFind.Length)
+                {
+                    checklistItemsText[i].text = i + 1 + ". " + itemsToFind[i].GetComponent<ItemFinder>().itemName;
+                }
+                else
+                {
+                    // If there are more checklist items than items to find, disable the extra checklist items
+                    checklistItemsText[i].gameObject.SetActive(false);
+                }
             }
         }
     }
@@ -87,11 +105,19 @@ public class ItemFinderManager : MonoBehaviour
     {
         if (hasStartedFinding)
         {
-            lineRenderer.positionCount = 2;
-            Vector3 playerPosition = player.transform.position;
-            playerPosition.y -= 0.1f; // Adjust the y position to be slightly below the player
-            lineRenderer.SetPosition(0, playerPosition);
-            lineRenderer.SetPosition(1, itemsToFind[currentItemIndex].transform.position);
+            if ((currentItemIndex < itemsToFind.Length) && !itemInspectionImage.gameObject.activeSelf)
+            {
+                // Draw a line from the player to the current item to find
+                lineRenderer.positionCount = 2;
+                Vector3 itemPosition = itemsToFind[currentItemIndex].transform.position;
+                itemPosition.y -= 3f; // Adjust the y position to be slightly above the item
+                lineRenderer.SetPosition(0, itemPosition);
+                lineRenderer.SetPosition(1, new Vector3(itemsToFind[currentItemIndex].transform.position.x, itemsToFind[currentItemIndex].transform.position.y - 1f, itemsToFind[currentItemIndex].transform.position.z));
+            }
+            else
+            {
+                lineRenderer.positionCount = 0; // Disable the line renderer when all items have been found
+            }
         } else
         {
             lineRenderer.positionCount = 0; // Disable the line renderer
@@ -108,6 +134,13 @@ public class ItemFinderManager : MonoBehaviour
             hasStartedFinding = true;
         }
         itemsToFind[currentItemIndex].GetComponent<ItemFinder>().enabled = true;
+
+        // Load the defects for the current item if the player is finding defects
+        if (isFindingDefects)
+        {
+            LoadDefects();
+        }
+
         itemsToFind[currentItemIndex].GetComponent<ItemFinder>().LoadItem();
     }
 
@@ -145,5 +178,78 @@ public class ItemFinderManager : MonoBehaviour
     {
         yield return new WaitForSeconds(delay);
         Events.Instance.SequenceComplete();
+    }
+
+    /// <summary>
+    /// Loads the defects for the current item into the defect buttons in the UI
+    /// </summary>
+    void LoadDefects()
+    {
+        var currentItem = itemsToFind[currentItemIndex].GetComponent<ItemFinder>();
+
+        // Validation checks to ensure that the current item has possible defects and that there are enough defect buttons to display them
+        if (currentItem.possibleDefects.Count == 0)
+        {
+            Debug.LogWarning("No defects found for item: " + currentItem.itemName);
+            return;
+        }
+        else if (currentItem.possibleDefects.Count > defectButtons.Length)
+        {
+            Debug.LogWarning("Not enough defect buttons for item: " + currentItem.itemName);
+            return;
+        }
+        else if (currentItem.currentDefect == null || currentItem.currentDefect == "")
+        {
+            Debug.LogWarning("Current defect not set for item: " + currentItem.itemName);
+            return;
+        }
+
+        // Load the defects for the current item into the defect buttons in the UI
+        for (int i = 0; i < defectButtons.Length; i++)
+        {
+            // When the current index is less than the number of possible defects for the current item, enable the button and set its text to the defect name
+            if (i < currentItem.possibleDefects.Count)
+            {
+                defectButtons[i].gameObject.SetActive(true);
+                defectButtons[i].GetComponentInChildren<TextMeshProUGUI>().text = currentItem.possibleDefects[i];
+
+                // Add a listener to the button to check if the selected defect is correct
+                if (currentItem.possibleDefects[i] == currentItem.currentDefect)
+                {
+                    defectButtons[i].onClick.RemoveAllListeners();
+                    defectButtons[i].onClick.AddListener(() => {DefectSelection(true); });
+                }
+                else
+                {
+                    defectButtons[i].onClick.RemoveAllListeners();
+                    defectButtons[i].onClick.AddListener(() => {DefectSelection(false); });
+                }
+            }
+            // Disable any remaining defect buttons if there are fewer defects than buttons
+            else
+            {
+                defectButtons[i].gameObject.SetActive(false);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Handles the selection of a defect by the player.
+    /// If the selected defect is correct, it provides positive feedback and proceeds to the next item. 
+    /// f incorrect, it provides negative feedback and allows the player to try again.
+    /// </summary>
+    /// <param name="isCorrect"></param>
+    void DefectSelection(bool isCorrect)
+    {
+        if (isCorrect)
+        {
+            UI.instance.UpdateFeedbackText("Correct defect selected!");
+            itemInspectionImage.gameObject.SetActive(false);
+            OnItemFound();
+        }
+        else
+        {
+            UI.instance.UpdateFeedbackText("Incorrect defect selected. Please try again.");
+        }
     }
 }

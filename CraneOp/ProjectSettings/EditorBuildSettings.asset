@@ -9,7 +9,10 @@ EditorBuildSettings:
     path: Assets/Scenes/Components Basics.unity
     guid: 68005256c8c2d7645a8419e306e603a5
   - enabled: 1
-    path: Assets/Scenes/Crane Basics.unity
+    path: Assets/Scenes/Find The Defects.unity
+    guid: 5e6228c768282e145b271715975a7d45
+  - enabled: 1
+    path: Assets/Scenes/Crane Operations.unity
     guid: df916c71ece4d324cbc7298acfb4d932
   m_configObjects:
     Unity.XR.Oculus.Settings: {fileID: 11400000, guid: bfa1182bd221b4ca89619141f66f1260, type: 2}

@@ -1,28 +1,71 @@
 /*
     This script is responsible for handling the item finding process in the game.
-    It manages the interaction between the player and the items to be found, including enabling/disabling items, updating the UI, and providing feedback when an item is found.
+    It manages the interaction between the player and the items to be found, including enabling the trigger collider for each item, updating the UI with item details, and providing feedback when an item is found.
+    The script also handles the highlighting of items when they are found and ensures that the appropriate UI
 */
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using UnityEngine.XR.Interaction.Toolkit;
+using UnityEngine.XR.Interaction.Toolkit.Interactables;
 
 
 public class ItemFinder : MonoBehaviour
 {
     [Header("Trigger Collider")]
-    public Collider itemTriggerCollider; // Reference for the item's trigger collider as there is 2 colliders on the item, one for the trigger and one for the colliding collider.
+    public List<Collider> itemTriggerColliders;
     
-    [Header("Item Settings")]
+    [Header("Item Details")]
     public string itemName;
     [SerializeField] Sprite[] defectImages;
+    public List<string> possibleDefects; // List of possible defects for the item.
+    public string currentDefect; // The current defect of the item.
 
+    [Header("Item Hover Settings")]
+    [SerializeField] Renderer[] renderers;
+    [SerializeField] Material[][] originals;   // original materials for each renderer
+    XRSimpleInteractable interactable;
+
+    void Awake()
+    {
+        // Store the original materials for each renderer to allow for unhighlighting later
+        originals = new Material[renderers.Length][];
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            if (renderers[i] != null)
+            {
+                originals[i] = renderers[i].sharedMaterials;
+            }
+            else
+            {
+                Debug.LogWarning("Renderer at index " + i + " is not assigned in the inspector.");
+            }
+        }
+        interactable = GetComponent<XRSimpleInteractable>();
+        if (interactable == null)
+        {
+            Debug.LogError("XRSimpleInteractable component not found on " + gameObject.name + ". Please ensure it is attached to the GameObject.");
+        } else {
+            interactable.enabled = false; // Disable the interactable at the start to prevent interaction before the item is loaded
+        }
+    }
     /// <summary>
     /// Initializes the item by enabling its trigger collider
     /// </summary>
     public void LoadItem()
     {
-        // Enable the item's trigger collider to allow the player to interact with it
-        itemTriggerCollider.enabled = true;
+        foreach (Collider collider in itemTriggerColliders)
+        {
+            if (collider != null)
+            {
+                collider.enabled = true; // Enable the trigger collider to allow interaction with the item
+            }
+            else
+            {
+                Debug.LogWarning("Trigger collider is not assigned for " + gameObject.name);
+            }
+        }
+        interactable.enabled = true; // Enable the interactable to allow interaction with the item
 
         // Check if the item name and defect images are set, and update the UI accordingly
         if (itemName == null || itemName == "")
@@ -59,6 +102,7 @@ public class ItemFinder : MonoBehaviour
         }
     }
 
+    // Fallback methods if the player don't use raycast
     /// <summary>
     /// When the trainee is near the item, show the find button
     /// </summary>
@@ -103,13 +147,20 @@ public class ItemFinder : MonoBehaviour
     public void DisableItem()
     {
         // Disable the item's trigger collider to prevent further interaction
-        itemTriggerCollider.enabled = false;
+        foreach(Collider collider in itemTriggerColliders)
+        {
+            if (collider != null)
+            {
+                collider.enabled = false;
+            }
+        }
+        interactable.enabled = false; // Disable the interactable to prevent further interaction
 
         // Change the item's material to the highlight material
         if (GetComponent<Renderer>() != null)
         GetComponent<Renderer>().material = ItemFinderManager.Instance.highlightMaterial;
         else
-        Highlight();
+        Highlight(ItemFinderManager.Instance.highlightMaterial);
         ItemFinderManager.Instance.findButton.gameObject.SetActive(false);
 
         // Reset the defect images in the UI to null to clear the previous item's defects
@@ -126,13 +177,23 @@ public class ItemFinder : MonoBehaviour
     /// <summary>
     /// Highlight all child of the component when found
     /// </summary>
-    void Highlight()
+    public void Highlight(Material highlightMaterial)
     {
-        Material highlight = ItemFinderManager.Instance.highlightMaterial;
-
-        foreach (Renderer r in GetComponentsInChildren<Renderer>())
+        foreach (Renderer renderer in renderers)
         {
-            r.material = highlight;
+            renderer.material = highlightMaterial;
+        }
+    }
+
+    public void Unhighlight()
+    {
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            if (renderers[i] == null) continue;
+
+            {
+                renderers[i].sharedMaterials = originals[i];
+            }
         }
     }
 }

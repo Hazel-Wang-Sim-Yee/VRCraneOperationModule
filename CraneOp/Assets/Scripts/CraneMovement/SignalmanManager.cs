@@ -8,6 +8,8 @@ using UnityEngine.UI;
 using System.Collections.Generic;
 using System.Collections;
 
+// Make sure this script run after other scripts to prevent load from being detected before it is attached to the hook.
+[DefaultExecutionOrder(10)]
 public class SignalmanManager : MonoBehaviour
 {
     float timeElapsed = 0f;
@@ -81,6 +83,7 @@ public class SignalmanManager : MonoBehaviour
         }
 
         FindSignalDirection();
+        targets[currentSignalIndex].SetActive(true); // Ensure the current target area is active
         if (craneSequence.hasOperationCompleted) return; // Stop updating the time and incorrect signals if the operation is complete
         timeElapsed += Time.deltaTime;
         UI.instance.UpdateScoreText("TimeText", (int)timeElapsed, "Time Elapsed");
@@ -96,7 +99,7 @@ public class SignalmanManager : MonoBehaviour
         {
             return; // Ignore if the operation hasn't started
         }
-        craneSequence.ActivateButtons(false);
+        craneSequence.ActivateHoistButtons(false);
         currentSignalIndex++;
         if (currentSignalIndex >= targets.Length)
         {
@@ -205,6 +208,7 @@ public class SignalmanManager : MonoBehaviour
     public void CheckSignal(string direction)
     {
         if (!craneSequence.hasOperationStarted) return;
+        if (!craneSequence.isHookReady) return;
         if (direction != currentSignal) incorrectSignals++;
     }
 }

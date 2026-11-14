@@ -44,7 +44,10 @@ public class ControllerState : MonoBehaviour
             }
         }
         isButtonPressed = !isButtonPressed;
-        craneSequence.ActivateButtons(craneHoistMove.isMoving); // Disable movement buttons when hoisting and enable hoist buttons, and vice versa
+        if (craneSequence.isHookReady)
+        {
+            craneSequence.ActivateHoistButtons(craneHoistMove.isMoving); // Disable movement buttons when hoisting and enable hoist buttons, and vice versa
+        }
         if (isButtonPressed)
         {
             switch (buttonName)

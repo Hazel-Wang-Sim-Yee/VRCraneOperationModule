@@ -105,6 +105,13 @@ public class ColliderDetect : MonoBehaviour
         else if (other.CompareTag("Crane"))
         {
             Events.Instance.StopMovement();
+        } else if (other.CompareTag("Hook") && CompareTag("CraneDestination"))
+        {
+            if (!craneSequence.isHookReady)
+            {
+                meshRenderer.material = insideColor;
+                craneSequence.isHookReady = true;
+            }
         }
         /* For physics-based rope
         if (other.CompareTag("Rope") && gameObject.name == "RopeGone")
@@ -119,6 +126,7 @@ public class ColliderDetect : MonoBehaviour
 
     void OnTriggerExit(Collider other)
     {
+
         if (other.CompareTag("Rope") && gameObject.name == "RopeGone")
         {
             // When the rope is goes down past a certain point, the rope mesh renderer is enabled to make it visible again.
@@ -131,6 +139,10 @@ public class ColliderDetect : MonoBehaviour
         {
             // Indicate that the load is no longer in position and change the color of the crane destination to red.
             meshRenderer.material = outsideColor;
+        } else if (other.CompareTag("Hook") && CompareTag("CraneDestination"))
+        {
+            meshRenderer.material = outsideColor;
+            craneSequence.isHookReady = false;
         }
     }
 
@@ -143,6 +155,7 @@ public class ColliderDetect : MonoBehaviour
         }
         if (other.CompareTag("Load") && CompareTag("CraneDestination"))
         {
+            Debug.Log(other.name + "entered cranedestination");
             if (craneSequence.hasOperationStarted)
             {
                 meshRenderer.material = insideColor; // Change the color of the crane destination to green when the load is in position
@@ -150,6 +163,14 @@ public class ColliderDetect : MonoBehaviour
                 {
                    SignalmanManager.instance.NextArea(); // Move on to the next area if the crane is not moving and the load is in position
                 }
+            }
+        } else if (other.CompareTag("Hook") && CompareTag("CraneDestination"))
+        {
+            meshRenderer.material = insideColor; // Change the color of the crane destination to green when the hook is in position
+            if (!craneSequence.isCraneMoving)
+            {
+                craneSequence.EnableAllButtons(false); // Disable all buttons when the hook is ready and the crane is not moving
+                gameObject.SetActive(false); // Disable the crane destination once the hook is ready and the crane is not moving
             }
         }
     }

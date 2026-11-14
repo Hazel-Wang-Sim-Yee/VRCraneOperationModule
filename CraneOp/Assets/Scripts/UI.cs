@@ -22,8 +22,6 @@ public class UI : MonoBehaviour
     Coroutine clearFeedbackCoroutine;
 
     [Header("Crane modules Canvas")]
-    [Tooltip("This is the canvas that contains the controller buttons.")]
-    public Image controllerCanvas;
     public Image finalScoreCanvas;
 
     [Header("Singleton")]
@@ -64,17 +62,16 @@ public class UI : MonoBehaviour
         if (SceneManager.GetActiveScene().name.Contains("Crane"))
         {
             // Ensure that the controller canvas is assigned in the inspector for crane modules
-            if (controllerCanvas == null || finalScoreCanvas == null)
+            if (finalScoreCanvas == null)
             {
-                Debug.LogWarning("Ensure that the Controller Canvas and Final Score Canvas are assigned if in crane modules.");
+                Debug.LogWarning("Ensure that the Final Score Canvas is assigned if in crane modules.");
             } else {
-                controllerCanvas.gameObject.SetActive(false);
                 finalScoreCanvas.gameObject.SetActive(false);
             }
 
-            Events.Instance.onLoadLoaded += ActivateControllerCanvas;
-            Events.Instance.onLoadUnloaded += DeactivateControllerCanvas;
-            Events.Instance.onSequenceComplete += DeactivateControllerCanvas; // Deactivate the controller canvas when the sequence is complete
+            Events.Instance.onLoadLoaded += () => {ActivateControllerButtons(true);};
+            Events.Instance.onLoadUnloaded += () => {ActivateControllerButtons(false);};
+            Events.Instance.onSequenceComplete += () => {ActivateControllerButtons(false);}; // Deactivate the controller canvas when the sequence is complete
         }
     }
 
@@ -128,14 +125,21 @@ public class UI : MonoBehaviour
         GameObject.Find(label).GetComponent<TextMeshProUGUI>().text = scoreType + ": " + score.ToString();
     }
 
-    public void ActivateControllerCanvas()
+    public void ActivateControllerButtons(bool isActive)
     {
-        controllerCanvas.gameObject.SetActive(true);
-    }
-
-    public void DeactivateControllerCanvas()
-    {
-        controllerCanvas.gameObject.SetActive(false);
+        CraneSequence craneSequence = FindObjectOfType<CraneSequence>();
+        if (craneSequence == null)
+        {
+            Debug.LogError("CraneSequence script not found in the scene. Please ensure it is attached to a GameObject.");
+            return;
+        }
+        foreach (Button button in craneSequence.buttons)
+        {
+            if (button != null)
+            {
+                button.interactable = isActive;
+            }
+        }
     }
 
     void FixedUpdate()

@@ -16,7 +16,6 @@ public class SceneHandler : MonoBehaviour
 
     [Header("Module Selection Buttons")]
     [SerializeField] TextMeshProUGUI[] moduleButtonTexts; // Array to hold the TextMeshProUGUI components of the module selection buttons
-
     void Start()
     {
         StopAllCoroutines(); // Stop any existing coroutines to prevent conflicts
