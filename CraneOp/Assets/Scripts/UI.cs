@@ -34,13 +34,9 @@ public class UI : MonoBehaviour
     void Awake()
     {
         if (instance != null && instance != this)
-        {
             Destroy(this);
-        }
         else
-        {
             instance = this;
-        }
     }
 
     void Start()
@@ -48,13 +44,9 @@ public class UI : MonoBehaviour
         StopAllCoroutines(); // Stop any existing coroutines to prevent conflicts
         
         if (loadingAnimator == null)
-        {
             loadingAnimator = GameObject.Find("LoadingUI").GetComponent<Animator>();
-        }
         if (loadingText == null)
-        {
             loadingText = GameObject.Find("LoadingText").GetComponent<TextMeshProUGUI>();
-        }
 
         feedbackText.text = "";
         
@@ -63,14 +55,10 @@ public class UI : MonoBehaviour
         {
             // Ensure that the controller canvas is assigned in the inspector for crane modules
             if (finalScoreCanvas == null)
-            {
                 Debug.LogWarning("Ensure that the Final Score Canvas is assigned if in crane modules.");
-            } else {
+            else
                 finalScoreCanvas.gameObject.SetActive(false);
-            }
 
-            Events.Instance.onLoadLoaded += () => {ActivateControllerButtons(true);};
-            Events.Instance.onLoadUnloaded += () => {ActivateControllerButtons(false);};
             Events.Instance.onSequenceComplete += () => {ActivateControllerButtons(false);}; // Deactivate the controller canvas when the sequence is complete
         }
     }
@@ -134,20 +122,13 @@ public class UI : MonoBehaviour
             return;
         }
         foreach (Button button in craneSequence.buttons)
-        {
             if (button != null)
-            {
                 button.interactable = isActive;
-            }
-        }
     }
 
     void FixedUpdate()
     {
-        if (canvasesToRotate == null || canvasesToRotate.Length == 0)
-        {
-            return;
-        }
+        if (canvasesToRotate == null || canvasesToRotate.Length == 0) return;
         foreach (Canvas canvas in canvasesToRotate)
         {
             canvas.worldCamera = Camera.main;

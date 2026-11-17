@@ -6,8 +6,9 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
 using System.Collections;
-using UnityEngine.XR.Interaction.Toolkit;
+using UnityEngine.XR.Interaction.Toolkit.Interactors;
 using UnityEngine.XR.Interaction.Toolkit.Interactables;
+using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.Rendering;
 
 public class CraneSequence : MonoBehaviour
@@ -19,6 +20,10 @@ public class CraneSequence : MonoBehaviour
 
     [Header("Target Tracking")]
     public bool isCraneMoving = false; // Flag to indicate if the crane is moving
+    float totalError;
+    int target;
+    public float travelAccuracy;
+    [SerializeField] float maxDistance = 1f;
 
     [Header("Operation State")]
     public bool startButtonPressed = false; // Flag to indicate if the start button has been pressed
@@ -26,6 +31,7 @@ public class CraneSequence : MonoBehaviour
     public bool hasOperationStarted = false; // Flag to indicate if the crane operation has started
     public bool hasOperationCompleted = false; // Flag to indicate if the crane operation has completed
     XRGrabInteractable loadInteractable; // Reference to the XRGrabInteractable component of the load
+    public XRSocketInteractor shackleSocket;
 
     [Header("Script References")]
     [SerializeField] LoadHookSettings loadHookSettings; // Reference to the LoadHookSettings script to manage the load's state
@@ -36,9 +42,7 @@ public class CraneSequence : MonoBehaviour
         {
             loadHookSettings = FindObjectOfType<LoadHookSettings>();
             if (loadHookSettings == null)
-            {
                 Debug.LogError("LoadHookSettings script not found in the scene. Please ensure it is attached to a GameObject.");
-            }
         }
         
         // Auto-find might be broken at times so assign the buttons manually in the inspector to prevent issues.
@@ -53,9 +57,7 @@ public class CraneSequence : MonoBehaviour
         }
 
         foreach (Button button in buttons)
-        {
             button.interactable = false; // Disable all buttons at the start of the sequence
-        }
 
         dangerZone.weight = 0; // Disable the danger zone at the start of the sequence
         // Subscribe to the load loaded and sequence complete events to manage the load's interactable state
@@ -71,12 +73,11 @@ public class CraneSequence : MonoBehaviour
         if (!startButtonPressed) return;
 
         if (SignalmanManager.instance.currentSignalIndex == 0 || SignalmanManager.instance.currentSignalIndex == SignalmanManager.instance.targets.Length - 1)
-        {
             ActivateHoistButtons(true); // Enable hoisting buttons if the crane is at the last target area
-        } else
-        {
+        else
             ActivateHoistButtons(false); // Disable hoisting buttons if the crane is not at the first or last target area
-        }
+
+        UI.instance.UpdateScoreText("AccuracyText", (int)travelAccuracy, "Accuracy");
     }
 
     /// <summary>
@@ -90,13 +91,9 @@ public class CraneSequence : MonoBehaviour
         for (int i = 0; i < buttons.Count; i++)
         {
             if (buttons[i].name == "Up" || buttons[i].name == "Down")
-            {
                 buttons[i].interactable = isHoisting;
-            }
             else
-            {
                 buttons[i].interactable = !isHoisting;
-            }
         }
     }
 
@@ -109,13 +106,12 @@ public class CraneSequence : MonoBehaviour
         if (!isHookReady) return;
         // If crane already moved once and the operation has not started, set the operation as started
         if (isCraneMoving && hasOperationStarted)
-        {
+            if (loadInteractable!=null)
             // Lock the load to not allow the player to interact with it throughout the operation
             loadInteractable.interactionLayers = InteractionLayerMask.GetMask("LockedLoad");
-        } else
-        {
+        else
+            if (loadInteractable!=null)
             loadInteractable.interactionLayers = InteractionLayerMask.GetMask("Load");
-        }
     }
 
     /// <summary>
@@ -142,13 +138,12 @@ public class CraneSequence : MonoBehaviour
         {
             hasOperationStarted = true; // Set the operation state to started when the start button is pressed
             if (!isHookReady)
-            {
                 ActivateHoistButtons(true); // Enable hoisting buttons if the hook is not ready
-            }
         } else
         {
             EnableAllButtons(false); // Disable all buttons if the start button is not pressed
             hasOperationStarted = false; // Reset the operation state if the start button is not pressed
+            Events.Instance.StopMovement();
         }
 
         UI.instance.UpdateFeedbackText(startButtonPressed ? "Operation Started!" : "Operation Stopped!");
@@ -161,8 +156,20 @@ public class CraneSequence : MonoBehaviour
     public void EnableAllButtons(bool enable)
     {
         foreach (Button button in buttons)
-        {
             button.interactable = enable;
-        }
+    }
+
+    /// <summary>
+    /// Calculates the distance between the load and the target to determine accuracy
+    /// </summary>
+    /// <param name="error"></param>
+    public void CalculatePlacement(float error)
+    {
+        target++;
+        if (target == 1) { totalError = 0; travelAccuracy = 100; return; }
+
+        totalError += error;
+        float average = totalError / (target - 1);
+        travelAccuracy = Mathf.Clamp01(1f - average / maxDistance) * 100f;
     }
 }

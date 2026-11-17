@@ -3,6 +3,9 @@
 */
 using UnityEngine;
 using System.Collections;
+using UnityEngine.XR.Interaction.Toolkit.Interactors;
+using UnityEngine.XR.Interaction.Toolkit.Interactables;
+using UnityEngine.XR.Interaction.Toolkit;
 
 public class ColliderDetect : MonoBehaviour
 {
@@ -14,6 +17,7 @@ public class ColliderDetect : MonoBehaviour
 
     [Header("Script References")]
     [SerializeField] private CraneSequence craneSequence;
+    [SerializeField] LoadSelector loadSelector;
 
     [Header("Colour Settings")]
     [SerializeField] private Material insideColor;
@@ -33,29 +37,19 @@ public class ColliderDetect : MonoBehaviour
         {
             craneSequence = FindObjectOfType<CraneSequence>();
             if (craneSequence == null)
-            {
                 Debug.LogError("CraneSequence script not found in the scene. Please ensure it is attached to a GameObject.");
-            }
         }
         if (insideColor == null)
-        {
             Debug.LogWarning("Inside color not assigned. Please assign a material in the inspector if needed.");
-        }
         if (outsideColor == null)
-        {
             Debug.LogWarning("Outside color not assigned. Please assign a material in the inspector if needed.");
-        }
     }
 
     void OnCollisionEnter(Collision collision)
     {
         if (collision.gameObject.CompareTag("Load"))
-        {
             if (ableToCollide)
-            {
                 collisionCoroutine = StartCoroutine(ResetCollision());
-            }
-        }
     }
 
     void OnDisable()
@@ -73,9 +67,7 @@ public class ColliderDetect : MonoBehaviour
     {
         ableToCollide = true;
         if (CompareTag("CraneDestination") && meshRenderer != null)
-        {
             meshRenderer.material = outsideColor; // Reset the color of the crane destination to red when enabled
-        }
     }
 
     /// <summary>
@@ -94,13 +86,12 @@ public class ColliderDetect : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
+        // CRANE MOVEMENT
         if (other.CompareTag("Load") && CompareTag("CraneDestination"))
         {
             if (craneSequence.hasOperationStarted)
-            {
                 // Indicate that the load is in position and change the color of the crane destination to green.
                 meshRenderer.material = insideColor;
-            }
         }
         else if (other.CompareTag("Crane"))
         {
@@ -122,11 +113,25 @@ public class ColliderDetect : MonoBehaviour
             ropeRenderer.enabled = false;
             ropeChildRenderer.enabled = false;
         }*/
+
+        // LOAD AND GEAR CHECKER
+        if (CompareTag("GearChecker"))
+        {
+            var gearInteractable = other.GetComponentInParent<XRGrabInteractable>();
+            if (gearInteractable == null) return;
+
+            // is this gear on the required list, and not already counted?
+            string gearName = gearInteractable.name.Replace("(Clone)", "").Trim();
+            loadSelector.AddGear(gearName, gearInteractable);
+        }
+        if (gameObject.name == "CraneOpZoneCheck")
+            loadSelector.navigation.enabled = false;
     }
 
     void OnTriggerExit(Collider other)
     {
-
+        // CRANE MOVEMENT
+        /* For physics-based rope
         if (other.CompareTag("Rope") && gameObject.name == "RopeGone")
         {
             // When the rope is goes down past a certain point, the rope mesh renderer is enabled to make it visible again.
@@ -134,12 +139,11 @@ public class ColliderDetect : MonoBehaviour
             MeshRenderer ropeChildRenderer = other.transform.GetChild(0).GetComponent<MeshRenderer>();
             ropeRenderer.enabled = true;
             ropeChildRenderer.enabled = true;
-        }
+        }*/
         if (other.CompareTag("Load") && CompareTag("CraneDestination"))
-        {
             // Indicate that the load is no longer in position and change the color of the crane destination to red.
             meshRenderer.material = outsideColor;
-        } else if (other.CompareTag("Hook") && CompareTag("CraneDestination"))
+        else if (other.CompareTag("Hook") && CompareTag("CraneDestination"))
         {
             meshRenderer.material = outsideColor;
             craneSequence.isHookReady = false;
@@ -148,20 +152,26 @@ public class ColliderDetect : MonoBehaviour
 
     void OnTriggerStay(Collider other)
     {
+        // CRANE MOVEMENT
+        /* For physics-based rope
         if (other.CompareTag("Rope") && gameObject.name == "HoistUp")
         {
             CraneHoistMove craneHoistMove = GameObject.Find("hoist").GetComponent<CraneHoistMove>();
             craneHoistMove.isHoistUp = true;
-        }
+        }*/
         if (other.CompareTag("Load") && CompareTag("CraneDestination"))
         {
-            Debug.Log(other.name + "entered cranedestination");
             if (craneSequence.hasOperationStarted)
             {
                 meshRenderer.material = insideColor; // Change the color of the crane destination to green when the load is in position
                 if (craneSequence.isCraneMoving == false)
                 {
-                   SignalmanManager.instance.NextArea(); // Move on to the next area if the crane is not moving and the load is in position
+                    Rigidbody rb = other.attachedRigidbody;
+                    Vector3 loadPoint = rb != null ? rb.worldCenterOfMass : other.bounds.center;
+                    Vector3 diff = transform.position - loadPoint;
+                    diff.y = 0f;
+                    craneSequence.CalculatePlacement(diff.magnitude);
+                    SignalmanManager.instance.NextArea(); // Move on to the next area if the crane is not moving and the load is in position
                 }
             }
         } else if (other.CompareTag("Hook") && CompareTag("CraneDestination"))
@@ -170,6 +180,8 @@ public class ColliderDetect : MonoBehaviour
             if (!craneSequence.isCraneMoving)
             {
                 craneSequence.EnableAllButtons(false); // Disable all buttons when the hook is ready and the crane is not moving
+                craneSequence.shackleSocket.enabled = true;
+                other.tag = "Untagged";
                 gameObject.SetActive(false); // Disable the crane destination once the hook is ready and the crane is not moving
             }
         }

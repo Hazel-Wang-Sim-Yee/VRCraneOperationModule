@@ -8,8 +8,6 @@ using UnityEngine.UI;
 using System.Collections.Generic;
 using System.Collections;
 
-// Make sure this script run after other scripts to prevent load from being detected before it is attached to the hook.
-[DefaultExecutionOrder(10)]
 public class SignalmanManager : MonoBehaviour
 {
     float timeElapsed = 0f;
@@ -74,7 +72,7 @@ public class SignalmanManager : MonoBehaviour
         UI.instance.UpdateScoreText("IncorrectSignalsText", incorrectSignals, "Incorrect Signals");
     }
 
-    void Update()
+    void LateUpdate()
     {
         if (!isLoadAttached)
         {
@@ -99,7 +97,7 @@ public class SignalmanManager : MonoBehaviour
         {
             return; // Ignore if the operation hasn't started
         }
-        craneSequence.ActivateHoistButtons(false);
+        
         currentSignalIndex++;
         if (currentSignalIndex >= targets.Length)
         {
@@ -205,6 +203,11 @@ public class SignalmanManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Check if the crane movement direction is correct.
+    /// If it is not, increment the incorrect signals counter.
+    /// </summary>
+    /// <param name="direction"></param>
     public void CheckSignal(string direction)
     {
         if (!craneSequence.hasOperationStarted) return;

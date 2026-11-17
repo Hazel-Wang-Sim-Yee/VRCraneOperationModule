@@ -12,19 +12,15 @@ using UnityEngine.XR.Interaction.Toolkit.Interactables;
 
 public class ItemFinder : MonoBehaviour
 {
-    [Header("Trigger Collider")]
-    public List<Collider> itemTriggerColliders;
-    
     [Header("Item Details")]
-    public string itemName;
-    [SerializeField] Sprite[] defectImages;
-    public List<string> possibleDefects; // List of possible defects for the item.
-    public string currentDefect; // The current defect of the item.
+    public ItemFinderManager.ComponentItem data;
 
     [Header("Item Hover Settings")]
     [SerializeField] Renderer[] renderers;
     [SerializeField] Material[][] originals;   // original materials for each renderer
     XRSimpleInteractable interactable;
+
+    public bool arrowUp;
 
     void Awake()
     {
@@ -54,52 +50,26 @@ public class ItemFinder : MonoBehaviour
     /// </summary>
     public void LoadItem()
     {
-        foreach (Collider collider in itemTriggerColliders)
+        foreach (Collider collider in data.itemTriggerColliders)
         {
             if (collider != null)
-            {
                 collider.enabled = true; // Enable the trigger collider to allow interaction with the item
-            }
             else
-            {
                 Debug.LogWarning("Trigger collider is not assigned for " + gameObject.name);
-            }
         }
         interactable.enabled = true; // Enable the interactable to allow interaction with the item
 
         // Check if the item name and defect images are set, and update the UI accordingly
-        if (itemName == null || itemName == "")
-        {
-            Debug.LogWarning("Item name is not set for " + gameObject.name);
-        }
-        else if (ItemFinderManager.Instance.itemNameText == null)
-        {
-            Debug.LogWarning("Item name text is not set in the ItemFinderManager.");
-        }
+        if (data.itemName == null || data.itemName == "" || data.itemDescription == null || data.itemDescription == "")
+            Debug.LogWarning("Item name and/or description is not set for " + gameObject.name);
+        if (ItemFinderManager.Instance.itemNameText != null)
+            ItemFinderManager.Instance.itemNameText.text = data.itemName;
         else
-        {
-            ItemFinderManager.Instance.itemNameText.text = itemName;
-        }
-
-        if (ItemFinderManager.Instance.defectImages == null || ItemFinderManager.Instance.defectImages.Length == 0)
-        {
-            Debug.LogWarning("Defect images are not set in the ItemFinderManager.");
-        }
-        else if (defectImages == null || defectImages.Length == 0)
-        {
-            Debug.LogWarning("Defect images are not set for " + gameObject.name);
-        }
-        else if (defectImages.Length != ItemFinderManager.Instance.defectImages.Length)
-        {
-            Debug.LogWarning("Defect images length does not match the number of defect image slots in the UI.");
-        }
+            Debug.LogWarning("Please assign the UI reference for item name.");
+        if (ItemFinderManager.Instance.itemDescText != null)
+            ItemFinderManager.Instance.itemDescText.text = data.itemDescription;
         else
-        {
-            for (int i = 0; i < defectImages.Length; i++)
-            {
-                ItemFinderManager.Instance.defectImages[i].sprite = defectImages[i];
-            }
-        }
+            Debug.LogWarning("Please assign the UI reference for item desc if needed.");
     }
 
     // Fallback methods if the player don't use raycast
@@ -110,13 +80,9 @@ public class ItemFinder : MonoBehaviour
     void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Player"))
-        {
             // Check if the inspection panel is open, if it is, do not show the find button
             if (!ItemFinderManager.Instance.itemInspectionImage.gameObject.activeSelf)
-            {
                 ItemFinderManager.Instance.findButton.gameObject.SetActive(true);
-            }
-        }
     }
 
     /// <summary>
@@ -126,13 +92,9 @@ public class ItemFinder : MonoBehaviour
     void OnTriggerStay(Collider other)
     {
         if (other.CompareTag("Player"))
-        {
             // Check if the inspection panel is open, if it is, do not show the find button
             if (!ItemFinderManager.Instance.itemInspectionImage.gameObject.activeSelf)
-            {
                 ItemFinderManager.Instance.findButton.gameObject.SetActive(true);
-            }
-        }
     }
 
     void OnTriggerExit(Collider other)
@@ -147,13 +109,10 @@ public class ItemFinder : MonoBehaviour
     public void DisableItem()
     {
         // Disable the item's trigger collider to prevent further interaction
-        foreach(Collider collider in itemTriggerColliders)
-        {
+        foreach(Collider collider in data.itemTriggerColliders)
             if (collider != null)
-            {
                 collider.enabled = false;
-            }
-        }
+
         interactable.enabled = false; // Disable the interactable to prevent further interaction
 
         // Change the item's material to the highlight material
@@ -164,13 +123,11 @@ public class ItemFinder : MonoBehaviour
         ItemFinderManager.Instance.findButton.gameObject.SetActive(false);
 
         // Reset the defect images in the UI to null to clear the previous item's defects
-        for (int i = 0; i < ItemFinderManager.Instance.defectImages.Length; i++)
-        {
-            ItemFinderManager.Instance.defectImages[i].sprite = null;
-        }
-
+        for (int i = 0; i < ItemFinderManager.Instance.images.Length; i++)
+            ItemFinderManager.Instance.images[i].sprite = null;
+        
         ItemFinderManager.Instance.UpdateChecklist();
-        UI.instance.UpdateFeedbackText("Item completed: " + itemName);
+        UI.instance.UpdateFeedbackText("Item completed: " + data.itemName);
         this.enabled = false;
     }
 
@@ -180,9 +137,7 @@ public class ItemFinder : MonoBehaviour
     public void Highlight(Material highlightMaterial)
     {
         foreach (Renderer renderer in renderers)
-        {
             renderer.material = highlightMaterial;
-        }
     }
 
     public void Unhighlight()
@@ -190,10 +145,8 @@ public class ItemFinder : MonoBehaviour
         for (int i = 0; i < renderers.Length; i++)
         {
             if (renderers[i] == null) continue;
-
-            {
-                renderers[i].sharedMaterials = originals[i];
-            }
+            
+            renderers[i].sharedMaterials = originals[i];
         }
     }
 }

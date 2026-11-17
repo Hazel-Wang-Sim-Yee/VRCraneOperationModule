@@ -37,17 +37,11 @@ public class ControllerState : MonoBehaviour
     public void ToggleButtonState()
     {
         foreach (ControllerState state in otherButtonStates)
-        {
             if (state.isButtonPressed)
-            {
                 return;
-            }
-        }
+        
         isButtonPressed = !isButtonPressed;
-        if (craneSequence.isHookReady)
-        {
-            craneSequence.ActivateHoistButtons(craneHoistMove.isMoving); // Disable movement buttons when hoisting and enable hoist buttons, and vice versa
-        }
+
         if (isButtonPressed)
         {
             switch (buttonName)
@@ -71,9 +65,7 @@ public class ControllerState : MonoBehaviour
             craneSequence.SetCraneMovingState(false);
         }
         else
-        {
             Debug.LogError("isButtonPressed has an invalid state.");
-        }
     }
 
     /// <summary>
