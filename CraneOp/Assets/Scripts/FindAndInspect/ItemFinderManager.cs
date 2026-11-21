@@ -29,6 +29,21 @@ public class ItemFinderManager : MonoBehaviour
     public TextMeshProUGUI header2Text;
     public Image[] images;
     public TextMeshProUGUI[] checklistItemsText;
+    [System.Serializable]
+    public class ComponentItem
+    {
+        public enum Categories { Defect, Information }
+
+        public string itemName;
+        [TextArea] public string itemDescription;
+        public Categories category;
+        public Sprite[] images;
+        public List<string> possibleDefects;
+        public string currentDefect;
+        public List<Collider> itemTriggerColliders;
+        public Transform arrowLoc;
+        public Transform arrowLoc2;
+    }
 
     [Header("Arrow Settings")]
     [SerializeField] float arrowLength;
@@ -43,20 +58,6 @@ public class ItemFinderManager : MonoBehaviour
     [Header("Player Settings")]
     [SerializeField] GameObject player;
     [SerializeField] LineRenderer lineRenderer;
-
-    [System.Serializable]
-    public class ComponentItem
-    {
-        public enum Categories { Defect, Information }
-
-        public string itemName;
-        [TextArea] public string itemDescription;
-        public Categories category;
-        public Sprite[] images;
-        public List<string> possibleDefects;
-        public string currentDefect;
-        public List<Collider> itemTriggerColliders;
-    }
 
     void Awake()
     {
@@ -112,18 +113,11 @@ public class ItemFinderManager : MonoBehaviour
                 var item = itemsToFind[currentItemIndex];
                 // Draw a line from the player to the current item to find
                 lineRenderer.positionCount = 2;
-                Vector3 itemPosition = item.transform.position;
-                if (!item.GetComponent<ItemFinder>().arrowUp)
-                {
-                    itemPosition.y -= arrowLength; // Adjust the y position to be slightly below the item
-                    lineRenderer.SetPosition(1, new Vector3(item.transform.position.x, item.transform.position.y - arrowPosition1, item.transform.position.z));
-                }    
-                else
-                {
-                   itemPosition.y += arrowLength;
-                   lineRenderer.SetPosition(1, new Vector3(item.transform.position.x, item.transform.position.y + arrowPosition1, item.transform.position.z)); 
-                }    
-                lineRenderer.SetPosition(0, itemPosition);
+                Transform arrowPosition = item.GetComponent<ItemFinder>().data.arrowLoc;
+                Transform arrowPosition2 = item.GetComponent<ItemFinder>().data.arrowLoc2;
+
+                lineRenderer.SetPosition (1, new Vector3(arrowPosition2.position.x, arrowPosition2.position.y, arrowPosition2.position.z));    
+                lineRenderer.SetPosition(0, new Vector3(arrowPosition.position.x, arrowPosition.position.y, arrowPosition.position.z));
             }
             else
                 lineRenderer.positionCount = 0; // Disable the line renderer when all items have been found
@@ -159,7 +153,7 @@ public class ItemFinderManager : MonoBehaviour
         currentItemIndex++;
         if (currentItemIndex >= itemsToFind.Length)
         {
-            UI.instance.UpdateFeedbackText("All items found!");
+            UI.Instance.UpdateFeedbackText(isFindingDefects? "All defects identified!":"All items found!");
             StartCoroutine(DelayToNextModule(3f));
             return;
         }
@@ -290,11 +284,11 @@ public class ItemFinderManager : MonoBehaviour
     {
         if (isCorrect)
         {
-            UI.instance.UpdateFeedbackText("Correct defect selected!");
+            Events.Instance.ItemCorrect();
             itemInspectionImage.gameObject.SetActive(false);
             OnItemFound();
         }
         else
-            UI.instance.UpdateFeedbackText("Incorrect defect selected. Please try again.");
+            Events.Instance.ItemWrong();
     }
 }

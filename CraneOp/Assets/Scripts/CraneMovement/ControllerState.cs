@@ -24,8 +24,8 @@ public class ControllerState : MonoBehaviour
 
     void Start()
     {
-        craneSequence = FindObjectOfType<CraneSequence>();
-        craneHoistMove = FindObjectOfType<CraneHoistMove>();
+        craneSequence = FindAnyObjectByType<CraneSequence>();
+        craneHoistMove = FindAnyObjectByType<CraneHoistMove>();
         buttonName = gameObject.name;
     }
     
@@ -46,17 +46,17 @@ public class ControllerState : MonoBehaviour
         {
             switch (buttonName)
             {
-                case "Left":  Events.Instance.MoveLeft();  break;   // use your real Events method names
-                case "Right": Events.Instance.MoveRight(); break;
-                case "Front": Events.Instance.MoveFront(); break;
-                case "Back":  Events.Instance.MoveBack();  break;
+                case "East":  Events.Instance.MoveEast();  break;   // use your real Events method names
+                case "West": Events.Instance.MoveWest(); break;
+                case "North": Events.Instance.MoveNorth(); break;
+                case "South":  Events.Instance.MoveSouth();  break;
                 case "Up":    Events.Instance.HoistUp();   break;
                 case "Down":  Events.Instance.HoistDown(); break;
             }
             
             UpdateButtonColor();
             craneSequence.SetCraneMovingState(true);
-            SignalmanManager.instance.CheckSignal(buttonName);
+            SignalmanManager.Instance.CheckSignal(buttonName);
         }
         else if (isButtonPressed == false)
         {

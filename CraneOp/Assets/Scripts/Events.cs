@@ -10,10 +10,10 @@ public class Events : MonoBehaviour
 public static Events Instance { get; private set; }
 
     // Crane Movement Events
-    public event Action onMoveLeft;
-    public event Action onMoveRight;
+    public event Action onMoveEast;
+    public event Action onMoveWest;
     public event Action onMoveFront;
-    public event Action onMoveBack;
+    public event Action onMoveSouth;
     public event Action onStopMovement;
     public event Action onHoistUp;
     public event Action onHoistDown;
@@ -24,6 +24,8 @@ public static Events Instance { get; private set; }
 
     // Sequence Events
     public event Action onSequenceComplete;
+    public event Action onItemCorrect;
+    public event Action onItemWrong;
 
     void Awake()
     {
@@ -37,24 +39,24 @@ public static Events Instance { get; private set; }
     }
 
     // Crane Movement Events
-    public void MoveLeft()
+    public void MoveEast()
     {
-        onMoveLeft?.Invoke();
+        onMoveEast?.Invoke();
     }
 
-    public void MoveRight()
+    public void MoveWest()
     {
-        onMoveRight?.Invoke();
+        onMoveWest?.Invoke();
     }
 
-    public void MoveFront()
+    public void MoveNorth()
     {
         onMoveFront?.Invoke();
     }
 
-    public void MoveBack()
+    public void MoveSouth()
     {
-        onMoveBack?.Invoke();
+        onMoveSouth?.Invoke();
     }
 
     public void StopMovement()
@@ -87,5 +89,15 @@ public static Events Instance { get; private set; }
     public void SequenceComplete()
     {
         onSequenceComplete?.Invoke();
+    }
+
+    public void ItemCorrect()
+    {
+        onItemCorrect?.Invoke();
+    }
+
+    public void ItemWrong()
+    {
+        onItemWrong?.Invoke();
     }
 }

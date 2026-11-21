@@ -25,18 +25,18 @@ public class UI : MonoBehaviour
     public Image finalScoreCanvas;
 
     [Header("Singleton")]
-    public static UI instance;
+    public static UI Instance;
 
     [Header("Canvas Settings")]
     [Tooltip("Drag all the world-space canvases you want to rotate here.")]
-    [SerializeField] Canvas[] canvasesToRotate;
+    [SerializeField] List<Canvas> canvasesToRotate;
 
     void Awake()
     {
-        if (instance != null && instance != this)
+        if (Instance != null && Instance != this)
             Destroy(this);
         else
-            instance = this;
+            Instance = this;
     }
 
     void Start()
@@ -61,6 +61,9 @@ public class UI : MonoBehaviour
 
             Events.Instance.onSequenceComplete += () => {ActivateControllerButtons(false);}; // Deactivate the controller canvas when the sequence is complete
         }
+
+        Events.Instance.onItemCorrect += () => {UpdateFeedbackText("Correct!");};
+        Events.Instance.onItemWrong += () => {UpdateFeedbackText(FindObjectOfType<LoadSelector>()?"Wrong gear.":"Incorrect. Please try again.");};
     }
 
     /// <summary>
@@ -115,7 +118,7 @@ public class UI : MonoBehaviour
 
     public void ActivateControllerButtons(bool isActive)
     {
-        CraneSequence craneSequence = FindObjectOfType<CraneSequence>();
+        CraneSequence craneSequence = FindAnyObjectByType<CraneSequence>();
         if (craneSequence == null)
         {
             Debug.LogError("CraneSequence script not found in the scene. Please ensure it is attached to a GameObject.");
@@ -128,9 +131,14 @@ public class UI : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (canvasesToRotate == null || canvasesToRotate.Length == 0) return;
+        if (canvasesToRotate == null || canvasesToRotate.Count == 0) return;
         foreach (Canvas canvas in canvasesToRotate)
         {
+            if (canvas == null)
+            {
+                canvasesToRotate.Remove(canvas);
+                continue;
+            }
             canvas.worldCamera = Camera.main;
             // Only rotate canvas on the Y-axis to face the camera, keeping the X and Z rotation fixed
             Vector3 rotation = new Vector3(0, Camera.main.transform.eulerAngles.y, 0);

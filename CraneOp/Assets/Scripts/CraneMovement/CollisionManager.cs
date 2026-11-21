@@ -14,6 +14,7 @@ public class CollisionManager : MonoBehaviour
 
     [Header("Script References")]
     [SerializeField] SceneHandler sceneHandler;
+    [SerializeField] CraneSequence craneSequence;
 
     Coroutine restartSceneCoroutine; // Store the coroutine to prevent multiple coroutines from running simultaneously
 
@@ -22,11 +23,16 @@ public class CollisionManager : MonoBehaviour
         StopAllCoroutines(); // Ensure no coroutines are running at the start
         if (sceneHandler == null)
         {
-            sceneHandler = FindObjectOfType<SceneHandler>();
+            sceneHandler = FindAnyObjectByType<SceneHandler>();
             if (sceneHandler == null)
-            {
                 Debug.LogError("SceneHandler script not found in the scene. Please ensure it is attached to a GameObject.");
-            }
+        }
+
+        if (craneSequence == null)
+        {
+            craneSequence = FindAnyObjectByType<CraneSequence>();
+            if (craneSequence == null)
+                Debug.LogError("CraneSequence script not found in the scene. Please ensure it is attached to a GameObject.");
         }
 
         // Find all objects with the "CollisionObject" tag and store them in the collisionObjects array
@@ -41,6 +47,7 @@ public class CollisionManager : MonoBehaviour
 
     void FixedUpdate()
     {
+        if (!craneSequence.hasOperationStarted) return;
         CalculateTotalCollisions();
     }
     
@@ -61,13 +68,13 @@ public class CollisionManager : MonoBehaviour
         if (totalCollisions >= collisionLimit)
         {
             // Handle the case where the collision limit is reached
-            UI.instance.UpdateFeedbackText("You have made too many collisions! Please try again.");
+            UI.Instance.UpdateFeedbackText("You have made too many collisions! Please try again.");
             if (restartSceneCoroutine == null) // Check if the coroutine is already running
             {
                 restartSceneCoroutine = StartCoroutine(RestartSceneAfterDelay(3f)); // Restart the scene after a 3-second delay
             }
         }
-        UI.instance.UpdateScoreText("CollisionText", totalCollisions, "Collisions");
+        UI.Instance.UpdateScoreText("CollisionText", totalCollisions, "Collisions");
     }
 
     /// <summary>

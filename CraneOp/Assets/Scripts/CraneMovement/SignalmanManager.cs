@@ -11,11 +11,22 @@ using System.Collections;
 public class SignalmanManager : MonoBehaviour
 {
     float timeElapsed = 0f;
-    public static SignalmanManager instance;
+    public static SignalmanManager Instance;
 
     [Header("Signalman Settings")]
+    [SerializeField] GameObject craneOpsUIs;
     public TextMeshProUGUI signalmanSignal;
     public string currentSignal = "";
+    [SerializeField] Image signalImage;
+    [System.Serializable]
+    public class SignalSprite
+    {
+        public string signal;   // must match currentSignal exactly: "Up", "East", ...
+        public Sprite sprite;
+    }
+
+    [SerializeField] List<SignalSprite> signalSpriteList;
+    Dictionary<string, Sprite> signalSprites = new Dictionary<string, Sprite>();
     public int incorrectSignals = 0;
     public int currentSignalIndex;
     public GameObject[] targets;
@@ -32,22 +43,23 @@ public class SignalmanManager : MonoBehaviour
 
     void Awake()
     {
-        if (instance != null && instance != this)
+        if (Instance != null && Instance != this)
         {
             Destroy(this);
         }
         else
         {
-            instance = this;
+            Instance = this;
         }
     }
 
     void Start()
     {
-        Events.Instance.onLoadLoaded += () => {isLoadAttached = true; ShowTarget(true);};
-        Events.Instance.onLoadUnloaded += () => {isLoadAttached = false; ShowTarget(false);};
+        craneOpsUIs = GameObject.Find("CraneOpsUIs");
+        Events.Instance.onLoadLoaded += () => {isLoadAttached = true; ShowTarget(true); craneOpsUIs.SetActive(true);};
+        Events.Instance.onLoadUnloaded += () => {isLoadAttached = false; ShowTarget(false); craneOpsUIs.SetActive(false);};
         
-        craneSequence = FindObjectOfType<CraneSequence>();
+        craneSequence = FindAnyObjectByType<CraneSequence>();
         if (craneSequence == null)
         {
             Debug.LogError("CraneSequence script not found in the scene. Please ensure it is attached to a GameObject.");
@@ -69,7 +81,10 @@ public class SignalmanManager : MonoBehaviour
         }
 
         // Initialize the incorrect signals count in the UI
-        UI.instance.UpdateScoreText("IncorrectSignalsText", incorrectSignals, "Incorrect Signals");
+        UI.Instance.UpdateScoreText("IncorrectSignalsText", incorrectSignals, "Incorrect Signals");
+        craneOpsUIs.SetActive(false);
+        foreach (var s in signalSpriteList)
+            signalSprites[s.signal] = s.sprite;
     }
 
     void LateUpdate()
@@ -79,13 +94,13 @@ public class SignalmanManager : MonoBehaviour
             signalmanSignal.text = "Waiting for load to be attached";
             return;
         }
-
+        if (craneSequence.hasOperationCompleted) return;
         FindSignalDirection();
         targets[currentSignalIndex].SetActive(true); // Ensure the current target area is active
         if (craneSequence.hasOperationCompleted) return; // Stop updating the time and incorrect signals if the operation is complete
         timeElapsed += Time.deltaTime;
-        UI.instance.UpdateScoreText("TimeText", (int)timeElapsed, "Time Elapsed");
-        UI.instance.UpdateScoreText("IncorrectSignalsText", incorrectSignals, "Incorrect Signals");
+        UI.Instance.UpdateScoreText("TimeText", (int)timeElapsed, "Time Elapsed");
+        UI.Instance.UpdateScoreText("IncorrectSignalsText", incorrectSignals, "Incorrect Signals");
     }
     
     /// <summary>
@@ -101,7 +116,7 @@ public class SignalmanManager : MonoBehaviour
         currentSignalIndex++;
         if (currentSignalIndex >= targets.Length)
         {
-            UI.instance.UpdateFeedbackText("All target areas completed!");
+            UI.Instance.UpdateFeedbackText("All target areas completed!");
             Events.Instance.SequenceComplete();
 
             // Unsubscribe from events as the sequence is complete
@@ -109,6 +124,10 @@ public class SignalmanManager : MonoBehaviour
             Events.Instance.onLoadUnloaded -= () => {isLoadAttached = false; ShowTarget(false);};
 
             targets[currentSignalIndex - 1].SetActive(false); // Hide the last target area
+            
+            signalmanSignal.text = "Completed";
+            currentSignal = "Completed";
+            signalImage.sprite = signalSprites[currentSignal];
 
             return;
         }
@@ -150,15 +169,24 @@ public class SignalmanManager : MonoBehaviour
         }
 
         signalmanSignal.text = currentSignal;
+        signalImage.sprite = signalSprites[currentSignal];
+        signalImage.preserveAspect = true;
     }
 
+    /// <summary>
+    /// Calculate which signal to show based by checking the distance between the load and the target centre.
+    /// </summary>
+    /// <param name="diff"></param>
+    /// <returns></returns>
     string ComputeSignal(Vector3 diff)
     {
-        const float tolerance = 1f;
+        // To prevent quick switching of signals due to load swinging, set a tolerance (min distance)
+        const float tolerance = .5f;
 
         // If the crane is at the first or last target area, return "Up" or "Down" respectively
         if (currentSignalIndex == 0 || currentSignalIndex == targets.Length - 1) return diff.y > 0 ? "Up" : "Down";
 
+        // Check if x and z are within the tolerance
         bool xAligned = Mathf.Abs(diff.x) <= tolerance;
         bool zAligned = Mathf.Abs(diff.z) <= tolerance;
 
@@ -174,8 +202,8 @@ public class SignalmanManager : MonoBehaviour
                 Debug.LogWarning("Unable to determine which axis to use for signal calculation. Defaulting to x-axis.");
                 useX = true;
             }
-            return useX ? (diff.x > 0 ? "Right" : "Left")
-                        : (diff.z > 0 ? "Front" : "Back");
+            return useX ? (diff.x > 0 ? "East" : "West")
+                        : (diff.z > 0 ? "North" : "South");
         }
 
         if (Mathf.Abs(diff.y) > tolerance) return diff.y > 0 ? "Up" : "Down";

@@ -20,8 +20,6 @@ public class ItemFinder : MonoBehaviour
     [SerializeField] Material[][] originals;   // original materials for each renderer
     XRSimpleInteractable interactable;
 
-    public bool arrowUp;
-
     void Awake()
     {
         // Store the original materials for each renderer to allow for unhighlighting later
@@ -116,9 +114,6 @@ public class ItemFinder : MonoBehaviour
         interactable.enabled = false; // Disable the interactable to prevent further interaction
 
         // Change the item's material to the highlight material
-        if (GetComponent<Renderer>() != null)
-        GetComponent<Renderer>().material = ItemFinderManager.Instance.highlightMaterial;
-        else
         Highlight(ItemFinderManager.Instance.highlightMaterial);
         ItemFinderManager.Instance.findButton.gameObject.SetActive(false);
 
@@ -127,7 +122,7 @@ public class ItemFinder : MonoBehaviour
             ItemFinderManager.Instance.images[i].sprite = null;
         
         ItemFinderManager.Instance.UpdateChecklist();
-        UI.instance.UpdateFeedbackText("Item completed: " + data.itemName);
+        UI.Instance.UpdateFeedbackText("Item completed: " + data.itemName);
         this.enabled = false;
     }
 
@@ -136,16 +131,32 @@ public class ItemFinder : MonoBehaviour
     /// </summary>
     public void Highlight(Material highlightMaterial)
     {
-        foreach (Renderer renderer in renderers)
-            renderer.material = highlightMaterial;
+        foreach (Renderer r in renderers)
+        {
+            if (r == null) continue;
+
+            // Get the current array of materials
+            Material[] current = r.sharedMaterials;
+
+            // skip if already highlighted, so repeated calls don't keep stacking it
+            if (current.Length > 0 && current[current.Length - 1] == highlightMaterial) continue;
+
+            // Create a new array and make its length 1 longer than the current
+            Material[] withHighlight = new Material[current.Length + 1];
+            current.CopyTo(withHighlight, 0); // Get the current array and add to the front (index 0) of the new array
+            withHighlight[current.Length] = highlightMaterial; // Set the last material to the highlight material
+            r.sharedMaterials = withHighlight;
+        }
     }
 
+    /// <summary>
+    /// Return the materials of the mesh/object to the original materials (Unhighlight)
+    /// </summary>
     public void Unhighlight()
     {
         for (int i = 0; i < renderers.Length; i++)
         {
-            if (renderers[i] == null) continue;
-            
+            if (renderers[i] == null || originals[i] == null) continue;
             renderers[i].sharedMaterials = originals[i];
         }
     }

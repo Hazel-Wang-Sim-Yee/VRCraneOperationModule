@@ -70,7 +70,7 @@ public class CraneLoad : MonoBehaviour
         }
         if (loadHookSettings == null)
         {
-            loadHookSettings = FindObjectOfType<LoadHookSettings>();
+            loadHookSettings = FindAnyObjectByType<LoadHookSettings>();
             if (loadHookSettings == null)
             {
                 Debug.LogError("LoadHookSettings script not found in the scene. Please ensure it is attached to a GameObject.");
@@ -82,11 +82,11 @@ public class CraneLoad : MonoBehaviour
     {
         if (loadHookSettings.load == this.gameObject)
         {
-            if (SignalmanManager.instance.currentSignalIndex < SignalmanManager.instance.targets.Length)
+            if (SignalmanManager.Instance.currentSignalIndex < SignalmanManager.Instance.targets.Length)
             {
                 if (drawLine && lineRenderer != null)
                 {
-                    DrawLineToTarget(SignalmanManager.instance.targets[SignalmanManager.instance.currentSignalIndex].transform.position);
+                    DrawLineToTarget(SignalmanManager.Instance.targets[SignalmanManager.Instance.currentSignalIndex].transform.position);
                 } else if (!drawLine && lineRenderer != null)
                 {
                     lineRenderer.positionCount = 0; // Clear the line when not drawing

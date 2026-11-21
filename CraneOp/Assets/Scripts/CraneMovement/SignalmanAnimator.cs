@@ -35,7 +35,7 @@ public class SignalmanAnimator : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        var sm = SignalmanManager.instance;
+        var sm = SignalmanManager.Instance;
         string signal = (sm != null && sm.isLoadAttached) ? sm.currentSignal : "Idle";
         if (signal == lastSignal)
         return;
@@ -69,19 +69,19 @@ public class SignalmanAnimator : MonoBehaviour
             audioSource.clip = signalAudios[3];
             audioSource.Play();
             return 4;
-            case "Left":
+            case "East":
             audioSource.clip = signalAudios[4];
             audioSource.Play();
             return 5;
-            case "Right":
+            case "South":
             audioSource.clip = signalAudios[5];
             audioSource.Play();
             return 6;
-            case "Front":
+            case "North":
             audioSource.clip = signalAudios[6];
             audioSource.Play();
             return 7;
-            case "Back":
+            case "West":
             audioSource.clip = signalAudios[7];
             audioSource.Play();
             return 8;

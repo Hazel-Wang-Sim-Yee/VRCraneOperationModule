@@ -40,7 +40,7 @@ public class CraneSequence : MonoBehaviour
     {
         if (loadHookSettings == null)
         {
-            loadHookSettings = FindObjectOfType<LoadHookSettings>();
+            loadHookSettings = FindAnyObjectByType<LoadHookSettings>();
             if (loadHookSettings == null)
                 Debug.LogError("LoadHookSettings script not found in the scene. Please ensure it is attached to a GameObject.");
         }
@@ -48,10 +48,10 @@ public class CraneSequence : MonoBehaviour
         // Auto-find might be broken at times so assign the buttons manually in the inspector to prevent issues.
         if (buttons == null || buttons.Count == 0)
         {
-            buttons.Add(GameObject.Find("Left").GetComponent<Button>());
-            buttons.Add(GameObject.Find("Right").GetComponent<Button>());
-            buttons.Add(GameObject.Find("Front").GetComponent<Button>());
-            buttons.Add(GameObject.Find("Back").GetComponent<Button>());
+            buttons.Add(GameObject.Find("East").GetComponent<Button>());
+            buttons.Add(GameObject.Find("West").GetComponent<Button>());
+            buttons.Add(GameObject.Find("North").GetComponent<Button>());
+            buttons.Add(GameObject.Find("South").GetComponent<Button>());
             buttons.Add(GameObject.Find("Up").GetComponent<Button>());
             buttons.Add(GameObject.Find("Down").GetComponent<Button>());
         }
@@ -61,7 +61,7 @@ public class CraneSequence : MonoBehaviour
 
         dangerZone.weight = 0; // Disable the danger zone at the start of the sequence
         // Subscribe to the load loaded and sequence complete events to manage the load's interactable state
-        Events.Instance.onLoadLoaded += () => {loadInteractable = loadHookSettings.load.GetComponent<XRGrabInteractable>(); SignalmanManager.instance.currentSignalIndex = 0; dangerZone.weight = 1;};
+        Events.Instance.onLoadLoaded += () => {loadInteractable = loadHookSettings.load.GetComponent<XRGrabInteractable>(); SignalmanManager.Instance.currentSignalIndex = 0; dangerZone.weight = 1;};
         Events.Instance.onLoadUnloaded += () => {dangerZone.weight = 0;};
         Events.Instance.onSequenceComplete += CompleteOperation;
     }
@@ -69,15 +69,15 @@ public class CraneSequence : MonoBehaviour
     void Update()
     {
         // If the load is not attached or the start button has not been pressed, return early to prevent further processing
-        if (!SignalmanManager.instance.isLoadAttached) return;
+        if (!SignalmanManager.Instance.isLoadAttached) return;
         if (!startButtonPressed) return;
 
-        if (SignalmanManager.instance.currentSignalIndex == 0 || SignalmanManager.instance.currentSignalIndex == SignalmanManager.instance.targets.Length - 1)
+        if (SignalmanManager.Instance.currentSignalIndex == 0 || SignalmanManager.Instance.currentSignalIndex == SignalmanManager.Instance.targets.Length - 1)
             ActivateHoistButtons(true); // Enable hoisting buttons if the crane is at the last target area
         else
             ActivateHoistButtons(false); // Disable hoisting buttons if the crane is not at the first or last target area
 
-        UI.instance.UpdateScoreText("AccuracyText", (int)travelAccuracy, "Accuracy");
+        UI.Instance.UpdateScoreText("AccuracyText", (int)travelAccuracy, "Accuracy");
     }
 
     /// <summary>
@@ -121,9 +121,10 @@ public class CraneSequence : MonoBehaviour
     {
         hasOperationCompleted = true;
         loadInteractable.interactionLayers = InteractionLayerMask.GetMask("Load");
-        UI.instance.finalScoreCanvas.gameObject.SetActive(true);
-        UI.instance.UpdateScoreText("CollisionStat", FindObjectOfType<CollisionManager>().totalCollisions, "Total Collisions");
-        UI.instance.UpdateScoreText("WrongSignalStat", SignalmanManager.instance.incorrectSignals, "Wrong Signals");
+        UI.Instance.finalScoreCanvas.gameObject.SetActive(true);
+        UI.Instance.UpdateScoreText("CollisionStat", FindAnyObjectByType<CollisionManager>().totalCollisions, "Total Collisions");
+        UI.Instance.UpdateScoreText("WrongSignalStat", SignalmanManager.Instance.incorrectSignals, "Wrong Signals");
+        UI.Instance.UpdateScoreText("AccuracyStat", (int)travelAccuracy, "Accuracy");
     }
 
 
@@ -146,7 +147,7 @@ public class CraneSequence : MonoBehaviour
             Events.Instance.StopMovement();
         }
 
-        UI.instance.UpdateFeedbackText(startButtonPressed ? "Operation Started!" : "Operation Stopped!");
+        UI.Instance.UpdateFeedbackText(startButtonPressed ? "Operation Started!" : "Operation Stopped!");
     }
     
     /// <summary>

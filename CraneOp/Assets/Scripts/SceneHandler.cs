@@ -20,13 +20,13 @@ public class SceneHandler : MonoBehaviour
     {
         StopAllCoroutines(); // Stop any existing coroutines to prevent conflicts
 
-        if (UI.instance.loadingText != null)
+        if (UI.Instance.loadingText != null)
         {
-            UI.instance.loadingText.text = "Loading Module: " + SceneManager.GetActiveScene().name;
+            UI.Instance.loadingText.text = "Loading Module: " + SceneManager.GetActiveScene().name;
         }
         else
         {
-            Debug.LogWarning("UI instance has failed to find loading text.");
+            Debug.LogWarning("UI Instance has failed to find loading text.");
         }
 
         // Subscribe to the sequence complete event to load the next module if not in crane modules
@@ -89,7 +89,7 @@ public class SceneHandler : MonoBehaviour
         }
         else
         {
-            UI.instance.UpdateFeedbackText("No more modules to load. Returning to the first module.");
+            UI.Instance.UpdateFeedbackText("No more modules to load. Returning to the first module.");
             ModuleSelection(0);
         }
     }
@@ -109,11 +109,11 @@ public class SceneHandler : MonoBehaviour
             Debug.LogError("Scene name not found for module index: " + moduleIndex);
             yield break;
         }
-        if (UI.instance.loadingAnimator != null && UI.instance.loadingText != null)
+        if (UI.Instance.loadingAnimator != null && UI.Instance.loadingText != null)
         {
-            UI.instance.loadingAnimator.SetTrigger("Teleporting");
-            UI.instance.loadingText.text = "Loading Module: " + sceneName;
-            yield return new WaitForSeconds(UI.instance.loadingAnimator.GetCurrentAnimatorStateInfo(0).length); // Wait for the animation to finish
+            UI.Instance.loadingAnimator.SetTrigger("Teleporting");
+            UI.Instance.loadingText.text = "Loading Module: " + sceneName;
+            yield return new WaitForSeconds(UI.Instance.loadingAnimator.GetCurrentAnimatorStateInfo(0).length); // Wait for the animation to finish
             SceneManager.LoadScene(moduleIndex);
         }
         else

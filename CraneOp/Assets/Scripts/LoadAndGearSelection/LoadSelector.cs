@@ -34,7 +34,7 @@ public class LoadSelector : MonoBehaviour
     }
 
     [Header("Load Tracking")]
-    string currentSelectedOption = "";
+    string currentSelectedOption = null;
     List<string> gearsToCheck;
     int numberOfGearsFound;
     [Tooltip("Put all the gears here")]
@@ -42,12 +42,14 @@ public class LoadSelector : MonoBehaviour
     [SerializeField] List<XRSocketInteractor> gearSockets;
     List<XRGrabInteractable> placedGears;
     [SerializeField] Transform loadSpawnPos;
+    XRGrabInteractable rejectedGear;
 
     [Header("Things To Unlock")]
     [SerializeField] List<GameObject> disables;
     [SerializeField] List<GameObject> enables;
     public LineRenderer navigation;
     Coroutine waitingCoroutine;
+    [SerializeField] LoadHookSettings loadHookSettings;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -76,14 +78,6 @@ public class LoadSelector : MonoBehaviour
         foreach (XRSocketInteractor socket in gearSockets) socket.socketActive = false;
     }
 
-    void FixedUpdate()
-    {
-        if (waitingCoroutine != null) return;
-        if (currentSelectedOption == null) return;
-        if (gearsToCheck.Count > 0 && gearsToCheck.Count == numberOfGearsFound)
-            waitingCoroutine = StartCoroutine(WaitBeforeMoving());
-    }
-
     /// <summary>
     /// Select an option and toggle the interactable states of the other options.
     /// </summary>
@@ -104,7 +98,7 @@ public class LoadSelector : MonoBehaviour
             return;
         }
 
-        if (currentSelectedOption == "")
+        if (string.IsNullOrEmpty(currentSelectedOption))
         {
             // lock every other option
             currentSelectedOption = optionName;
@@ -116,7 +110,7 @@ public class LoadSelector : MonoBehaviour
         else if (currentSelectedOption == optionName)
         {
             // unlock all options
-            currentSelectedOption = "";
+            currentSelectedOption = null;
             foreach (Button b in loadOptions)
                 b.interactable = true;
             gearSelectionText.gameObject.SetActive(true);
@@ -126,9 +120,11 @@ public class LoadSelector : MonoBehaviour
             numberOfGearsFound = 0;
         }
 
-        selectedOptionText.text = currentSelectedOption == ""
+        LoadDetails details = GetLoad(currentSelectedOption);
+        selectedOptionText.text = currentSelectedOption == null
             ? "Select a load."
             : $"Current Selection: {currentSelectedOption}";
+        rejectedGear = null;
     }
 
     /// <summary>
@@ -174,10 +170,9 @@ public class LoadSelector : MonoBehaviour
     /// </summary>
     IEnumerator WaitBeforeMoving()
     {
-        UI.instance.UpdateFeedbackText("Section complete. Please proceed to crane operations.");
         // Spawn the load they have selected below the crane
         LoadDetails details = GetLoad(currentSelectedOption);
-        if (details == null) Debug.LogError("Load doesn't exist");
+        if (details == null) yield break;
         if (loadSpawnPos != null)
         {
             Instantiate(details.loadPrefab, loadSpawnPos);
@@ -204,6 +199,9 @@ public class LoadSelector : MonoBehaviour
             }
         }
         HideUnusedGears();
+        foreach(var gear in placedGears){
+            gear.GetComponent<GearSettings>().SwapAttachmentPoint();
+        }
 
         // Provide a navigation arrow to help players recognise where they need to go next
         if (navigation != null)
@@ -221,11 +219,15 @@ public class LoadSelector : MonoBehaviour
             {
                 Debug.LogWarning("InstructionCanvas not found in the scene.");
             }
+        UI.Instance.UpdateFeedbackText("Section complete. Please proceed to crane operations.");
         }
 
         // Reset each required gears to allow them to interact with it and use it in the next station
         foreach (XRGrabInteractable grab in placedGears)
-            grab.interactionLayers = InteractionLayerMask.GetMask("Gear");
+        {
+            grab.interactionLayers &= ~InteractionLayerMask.GetMask("LockedGear");
+            grab.interactionLayers |= InteractionLayerMask.GetMask("Gear");
+        }
     }
 
     /// <summary>
@@ -235,25 +237,47 @@ public class LoadSelector : MonoBehaviour
     /// </summary>
     /// <param name="gearName"></param>
     /// <param name="gearInterctable"></param>
-    public void AddGear(string gearName, XRGrabInteractable gearInterctable)
+    public void AddGear(string gearName, XRGrabInteractable gearInteractable)
     {
-        if (!gearsToCheck.Contains(gearName))
+        if (string.IsNullOrEmpty(currentSelectedOption))
         {
-            UI.instance.UpdateFeedbackText($"{gearName} is wrong.");
+            if (rejectedGear == gearInteractable) return;
+            UI.Instance.UpdateFeedbackText("Select a load first.");
+            rejectedGear = gearInteractable;
             return;
         }
+        if (!gearsToCheck.Contains(gearName))
+        {
+            if (rejectedGear == gearInteractable) return;
+            rejectedGear = gearInteractable;
+            Events.Instance.ItemWrong();
+            return;
+        }
+        if (placedGears.Contains(gearInteractable)) return;
+
+        var item = gearInteractable.GetComponent<GearSettings>();
+        LoadDetails details = GetLoad(currentSelectedOption);
 
         // find a free socket
         foreach (XRSocketInteractor socket in gearSockets)
         {
             if (socket.hasSelection) continue;
 
+            if (gearInteractable.isSelected) return;
             socket.socketActive = true;
-            socket.interactionManager.SelectEnter((IXRSelectInteractor)socket, (IXRSelectInteractable)gearInterctable);
-            placedGears.Add(gearInterctable);
-            gearInterctable.interactionLayers = InteractionLayerMask.GetMask("LockedGear");
+            socket.interactionManager.SelectEnter((IXRSelectInteractor)socket, (IXRSelectInteractable)gearInteractable);
+
+            placedGears.Add(gearInteractable);
+            gearInteractable.interactionLayers &= ~InteractionLayerMask.GetMask("Gear");
+            gearInteractable.interactionLayers |= InteractionLayerMask.GetMask("LockedGear");
+
+            if (item != null && item.gearType == GearType.Shackle)
+                loadHookSettings.shackle = gearInteractable;
             numberOfGearsFound++;
-            UI.instance.UpdateFeedbackText($"{gearName} is correct.");
+            Events.Instance.ItemCorrect();
+            if (waitingCoroutine != null) return;
+            if (gearsToCheck.Count > 0 && gearsToCheck.Count == numberOfGearsFound)
+                waitingCoroutine = StartCoroutine(WaitBeforeMoving());
             break;
         }
     }

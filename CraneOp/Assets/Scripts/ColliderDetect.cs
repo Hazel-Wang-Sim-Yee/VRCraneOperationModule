@@ -35,7 +35,7 @@ public class ColliderDetect : MonoBehaviour
         StopAllCoroutines(); // Ensure no coroutines are running at the start
         if (craneSequence == null)
         {
-            craneSequence = FindObjectOfType<CraneSequence>();
+            craneSequence = FindAnyObjectByType<CraneSequence>();
             if (craneSequence == null)
                 Debug.LogError("CraneSequence script not found in the scene. Please ensure it is attached to a GameObject.");
         }
@@ -115,16 +115,7 @@ public class ColliderDetect : MonoBehaviour
         }*/
 
         // LOAD AND GEAR CHECKER
-        if (CompareTag("GearChecker"))
-        {
-            var gearInteractable = other.GetComponentInParent<XRGrabInteractable>();
-            if (gearInteractable == null) return;
-
-            // is this gear on the required list, and not already counted?
-            string gearName = gearInteractable.name.Replace("(Clone)", "").Trim();
-            loadSelector.AddGear(gearName, gearInteractable);
-        }
-        if (gameObject.name == "CraneOpZoneCheck")
+        if (gameObject.name == "CraneOpZoneCheck" && other.CompareTag("Player"))
             loadSelector.navigation.enabled = false;
     }
 
@@ -167,11 +158,15 @@ public class ColliderDetect : MonoBehaviour
                 if (craneSequence.isCraneMoving == false)
                 {
                     Rigidbody rb = other.attachedRigidbody;
-                    Vector3 loadPoint = rb != null ? rb.worldCenterOfMass : other.bounds.center;
-                    Vector3 diff = transform.position - loadPoint;
-                    diff.y = 0f;
-                    craneSequence.CalculatePlacement(diff.magnitude);
-                    SignalmanManager.instance.NextArea(); // Move on to the next area if the crane is not moving and the load is in position
+                    bool settled = rb == null || rb.linearVelocity.sqrMagnitude < 0.05f;
+                    if (!craneSequence.isCraneMoving && settled)
+                    {
+                        Vector3 loadPoint = rb != null ? rb.worldCenterOfMass : other.bounds.center;
+                        Vector3 diff = transform.position - loadPoint;
+                        diff.y = 0f;
+                        craneSequence.CalculatePlacement(diff.magnitude);
+                        SignalmanManager.Instance.NextArea(); // Move on to the next area if the crane is not moving and the load is in position
+                    }
                 }
             }
         } else if (other.CompareTag("Hook") && CompareTag("CraneDestination"))
@@ -185,5 +180,18 @@ public class ColliderDetect : MonoBehaviour
                 gameObject.SetActive(false); // Disable the crane destination once the hook is ready and the crane is not moving
             }
         }
+
+        // LOAD AND GEAR CHECKER
+        if (CompareTag("GearChecker"))
+        {
+            var gearInteractable = other.GetComponentInParent<XRGrabInteractable>();
+            if (gearInteractable == null || gearInteractable.isSelected) return;
+            
+            // is this gear on the required list, and not already counted?
+            string gearName = gearInteractable.name.Replace("(Clone)", "").Trim();
+            loadSelector.AddGear(gearName, gearInteractable);
+        }
+        if (gameObject.name == "CraneOpZoneCheck" && other.CompareTag("Player"))
+            loadSelector.navigation.enabled = false;
     }
 }

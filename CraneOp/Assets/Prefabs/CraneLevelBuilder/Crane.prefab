@@ -248,12 +248,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 496332104713825334}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: -0.742, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 3565130703147170372}
+  m_Father: {fileID: 1611958461888680532}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
 --- !u!114 &5649773246879376498
 MonoBehaviour:
@@ -363,6 +363,7 @@ MonoBehaviour:
   hookBody: {fileID: 5337718367719333429}
   loadPos: {fileID: 527597308550240404}
   load: {fileID: 0}
+  shackle: {fileID: 0}
   craneRoot: {fileID: 1720667199908682238}
   ratedCapacityKg: 50
   hookInfoText: {fileID: 5633401323439795069}
@@ -513,6 +514,38 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1124172883768251848}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &664407709616905334
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1611958461888680532}
+  m_Layer: 0
+  m_Name: GameObject
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1611958461888680532
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 664407709616905334}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: 0.7071068, z: -0, w: 0.7071068}
+  m_LocalPosition: {x: 0, y: -0.742, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 3282789371388657652}
+  m_Father: {fileID: 3565130703147170372}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &664712539000748666
 GameObject:
@@ -5251,6 +5284,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ColliderDetect
   collisions: 0
   craneSequence: {fileID: 0}
+  loadSelector: {fileID: 0}
   insideColor: {fileID: 0}
   outsideColor: {fileID: 0}
 --- !u!1 &7330685928995927083
@@ -5752,7 +5786,7 @@ Transform:
   - {fileID: 5854551957686881088}
   - {fileID: 4074617115822178237}
   - {fileID: 8721109961468899463}
-  - {fileID: 3282789371388657652}
+  - {fileID: 1611958461888680532}
   - {fileID: 7789670023025592552}
   m_Father: {fileID: 1720667199908682238}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

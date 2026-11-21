@@ -6,6 +6,10 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.XR.Interaction.Toolkit.Interactors;
+using UnityEngine.XR.Interaction.Toolkit.Interactables;
+using UnityEngine.XR.Interaction.Toolkit;
+using UnityEngine.Rendering;
 using TMPro;
 
 public class LoadHookSettings : MonoBehaviour
@@ -14,6 +18,7 @@ public class LoadHookSettings : MonoBehaviour
     [SerializeField] Rigidbody hookBody;   // the HOOK's Rigidbody, not the socket's
     [SerializeField] Transform loadPos;
     public GameObject load;
+    public XRGrabInteractable shackle;
     [Tooltip("Parent of the hook, socket and all rope segments. Their colliders are ignored by the load while attached.")]
     [SerializeField] Transform craneRoot;
 
@@ -33,7 +38,7 @@ public class LoadHookSettings : MonoBehaviour
     bool loadWasKinematic;
 
     ConfigurableJoint joint;
-    Rigidbody loadRb;
+    public Rigidbody loadRb;
     readonly List<(Collider a, Collider b)> ignored = new List<(Collider, Collider)>();
 
     CollisionManager collisionManager;
@@ -59,7 +64,7 @@ public class LoadHookSettings : MonoBehaviour
     void Start()
     {
         StopAllCoroutines(); // Ensure no coroutines are running at the start
-        collisionManager = GameObject.FindObjectOfType<CollisionManager>();
+        collisionManager = GameObject.FindAnyObjectByType<CollisionManager>();
         if (collisionManager == null)
         {
             Debug.LogError("CollisionManager script not found in the scene. Please ensure that it is in the scene if you require load collision management functionality.");
@@ -119,8 +124,8 @@ public class LoadHookSettings : MonoBehaviour
         if (!IsWithinCapacity(load))
         {
             float mass = load.GetComponent<Rigidbody>().mass;
-            if (UI.instance != null)
-                UI.instance.UpdateFeedbackText(
+            if (UI.Instance != null)
+                UI.Instance.UpdateFeedbackText(
                     $"This load is too heavy to lift ({mass * load.GetComponent<CraneLoad>().massMultiplier:0.#} kg). The crane's limit is {ratedCapacityKg:0.#} kg."
                 );
             return;
@@ -172,7 +177,9 @@ public class LoadHookSettings : MonoBehaviour
         loadWasKinematic = loadRb.isKinematic;
         loadRb.isKinematic = false;
 
-        SignalmanManager.instance.isLoadAttached = true; // Set the isLoadAttached flag to true when the load is attached. 
+        SignalmanManager.Instance.isLoadAttached = true; // Set the isLoadAttached flag to true when the load is attached.
+        shackle.interactionLayers = InteractionLayerMask.GetMask("LockedGear");
+        shackle.GetComponent<GearSettings>().SwapAttachmentPoint();
         Events.Instance.LoadLoaded();
     }
 
@@ -202,7 +209,10 @@ public class LoadHookSettings : MonoBehaviour
             hookInfoText.gameObject.SetActive(true); // Hide the hook info text when a load is attached.
         }
 
-        SignalmanManager.instance.isLoadAttached = false; // Set the isLoadAttached flag to false when the load is detached.
+        SignalmanManager.Instance.isLoadAttached = false; // Set the isLoadAttached flag to false when the load is detached.
+        shackle.interactionLayers = InteractionLayerMask.GetMask("Gear");
+        shackle.interactionLayers |= InteractionLayerMask.GetMask("Shackle");
+        shackle.GetComponent<GearSettings>().ResetAttachmentPoint();
         Events.Instance.LoadUnloaded();
     }
 

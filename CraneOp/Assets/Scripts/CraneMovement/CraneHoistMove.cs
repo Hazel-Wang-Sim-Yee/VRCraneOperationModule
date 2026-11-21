@@ -114,9 +114,9 @@ public class CraneHoistMove : MonoBehaviour
         if (arrived)
         {
             // If crane reached last target area, do not display feedback text for hoist up or down.
-            if (SignalmanManager.instance.currentSignalIndex < SignalmanManager.instance.targets.Length -1)
+            if (SignalmanManager.Instance.currentSignalIndex < SignalmanManager.Instance.targets.Length -1)
             {
-                UI.instance.UpdateFeedbackText(isHoistUp ? "Hoist is at its minimum length." : "Hoist is at its maximum height.");
+                UI.Instance.UpdateFeedbackText(isHoistUp ? "Hoist is at its minimum length." : "Hoist is at its maximum height.");
             }
             StopMovement();
         }

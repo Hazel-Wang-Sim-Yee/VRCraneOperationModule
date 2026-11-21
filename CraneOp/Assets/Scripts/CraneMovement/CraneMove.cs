@@ -10,8 +10,8 @@ public class CraneMove : MonoBehaviour
 {
     public enum Direction
     {
-        Back,
-        Front,
+        South,
+        North,
     }
     private Vector3 targetPosition;
     public bool isMoving = false;
@@ -20,8 +20,8 @@ public class CraneMove : MonoBehaviour
 
     void Start()
     {
-        Events.Instance.onMoveBack += MoveBack;
-        Events.Instance.onMoveFront += MoveFront;
+        Events.Instance.onMoveSouth += MoveSouth;
+        Events.Instance.onMoveFront += MoveNorth;
         Events.Instance.onStopMovement += StopMovement;
     }
 
@@ -39,7 +39,7 @@ public class CraneMove : MonoBehaviour
         if (transform.position == targetPosition)
         {
             isMoving = false;
-            UI.instance.UpdateFeedbackText("Crane can't move further.");
+            UI.Instance.UpdateFeedbackText("Crane can't move further.");
         }
     }
 
@@ -55,11 +55,11 @@ public class CraneMove : MonoBehaviour
         switch (direction)
         {
             // Find the respective boundary game object and set the destination to its position (x or z)
-            case Direction.Back:
+            case Direction.South:
                 destination.z = GameObject.Find("BackBoundary").transform.position.z;
                 break;
 
-            case Direction.Front:
+            case Direction.North:
                 destination.z = GameObject.Find("FrontBoundary").transform.position.z;
                 break;
         }
@@ -70,13 +70,13 @@ public class CraneMove : MonoBehaviour
     }
 
     // Methods to move the crane in specific directions
-    public void MoveBack()
+    public void MoveSouth()
     {
-        MoveToTarget(Direction.Back);
+        MoveToTarget(Direction.South);
     }
-    public void MoveFront()
+    public void MoveNorth()
     {
-        MoveToTarget(Direction.Front);
+        MoveToTarget(Direction.North);
     }
     public void StopMovement()
     {

@@ -1,6 +1,6 @@
 /*
     This script is responsible for moving the crane objects (trolley etc.) in the game.
-    It allows the crane objects to move left and right based on user input, while ensuring they stay aligned with the crane's z position.
+    It allows the crane objects to move East and West based on user input, while ensuring they stay aligned with the crane's z position.
     NOTE: put this on the trolley / non-physics crane parts only. Never on the hook or the load:
     those are dynamic Rigidbodies and must only be moved by their joints.
 */
@@ -12,26 +12,33 @@ public class CraneObjectMove : MonoBehaviour
 {
     public enum Direction
     {
-        Left,
-        Right,
+        East,
+        West,
     }
     private Vector3 targetPosition;
     public bool isMoving = false;
 
     public float moveSpeed = 1f;
+    Vector3 lastPos;
+    public Vector3 lastCraneVelocity;
+    public Rigidbody loadRB;
+    [SerializeField] float swingStrength = 0.2f;
+    [SerializeField] LoadHookSettings loadHookSettings;
 
     Transform crane;
 
     void Start()
     {
+        lastPos = transform.position;
         crane = GameObject.Find("crane").transform;
-        Events.Instance.onMoveLeft += MoveLeft;
-        Events.Instance.onMoveRight += MoveRight;
+        Events.Instance.onMoveEast += MoveEast;
+        Events.Instance.onMoveWest += MoveWest;
         Events.Instance.onStopMovement += StopMovement;
     }
 
     void FixedUpdate()
     {
+        if (loadRB == null) loadRB = loadHookSettings.loadRb;
         // Ensure the crane objects stay at the same z position as the crane
         Vector3 position = transform.position;
         position.z = crane.position.z;
@@ -47,9 +54,11 @@ public class CraneObjectMove : MonoBehaviour
 
         if (transform.position == targetPosition)
         {
-            UI.instance.UpdateFeedbackText("Crane can't move further.");
+            UI.Instance.UpdateFeedbackText("Crane can't move further.");
             StopMovement();
         }
+        lastCraneVelocity = (transform.position - lastPos)/Time.fixedDeltaTime;
+        lastPos = transform.position;
     }
 
     /// <summary>
@@ -64,11 +73,11 @@ public class CraneObjectMove : MonoBehaviour
         switch (direction)
         {
             // Find the respective boundary game object and set the destination to its position (x or z)
-            case Direction.Left:
+            case Direction.East:
                 destination.x = GameObject.Find("LeftBoundary").transform.position.x;
                 break;
 
-            case Direction.Right:
+            case Direction.West:
                 destination.x = GameObject.Find("RightBoundary").transform.position.x;
                 break;
         }
@@ -79,16 +88,20 @@ public class CraneObjectMove : MonoBehaviour
     }
 
     // Methods to move the crane in specific directions
-    public void MoveLeft()
+    public void MoveEast()
     {
-        MoveToTarget(Direction.Left);
+        MoveToTarget(Direction.East);
     }
-    public void MoveRight()
+    public void MoveWest()
     {
-        MoveToTarget(Direction.Right);
+        MoveToTarget(Direction.West);
     }
     public void StopMovement()
     {
         isMoving = false;
+        if (loadRB == null) return;
+        Vector3 v = lastCraneVelocity;
+        v.y = 0f;
+        loadRB.AddForce(v*swingStrength, ForceMode.VelocityChange);
     }
 }
