@@ -149,11 +149,13 @@ public class ItemFinderManager : MonoBehaviour
     /// </summary>
     public void OnItemFound()
     {
+        Events.Instance.ItemCorrect();
         itemsToFind[currentItemIndex].GetComponent<ItemFinder>().DisableItem();
         currentItemIndex++;
         if (currentItemIndex >= itemsToFind.Length)
         {
             UI.Instance.UpdateFeedbackText(isFindingDefects? "All defects identified!":"All items found!");
+            SFXHandler.Instance.Play(SFXHandler.Instance.completed);
             StartCoroutine(DelayToNextModule(3f));
             return;
         }

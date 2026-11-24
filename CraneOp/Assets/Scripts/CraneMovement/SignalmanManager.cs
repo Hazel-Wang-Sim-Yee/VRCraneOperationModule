@@ -14,7 +14,7 @@ public class SignalmanManager : MonoBehaviour
     public static SignalmanManager Instance;
 
     [Header("Signalman Settings")]
-    [SerializeField] GameObject craneOpsUIs;
+    [SerializeField] GameObject craneOpsUis;
     public TextMeshProUGUI signalmanSignal;
     public string currentSignal = "";
     [SerializeField] Image signalImage;
@@ -55,9 +55,8 @@ public class SignalmanManager : MonoBehaviour
 
     void Start()
     {
-        craneOpsUIs = GameObject.Find("CraneOpsUIs");
-        Events.Instance.onLoadLoaded += () => {isLoadAttached = true; ShowTarget(true); craneOpsUIs.SetActive(true);};
-        Events.Instance.onLoadUnloaded += () => {isLoadAttached = false; ShowTarget(false); craneOpsUIs.SetActive(false);};
+        Events.Instance.onLoadLoaded += OnLoadLoaded;
+        Events.Instance.onLoadUnloaded += OnLoadUnloaded;
         
         craneSequence = FindAnyObjectByType<CraneSequence>();
         if (craneSequence == null)
@@ -82,7 +81,7 @@ public class SignalmanManager : MonoBehaviour
 
         // Initialize the incorrect signals count in the UI
         UI.Instance.UpdateScoreText("IncorrectSignalsText", incorrectSignals, "Incorrect Signals");
-        craneOpsUIs.SetActive(false);
+        craneOpsUis.SetActive(false);
         foreach (var s in signalSpriteList)
             signalSprites[s.signal] = s.sprite;
     }
@@ -108,11 +107,6 @@ public class SignalmanManager : MonoBehaviour
     /// </summary>
     public void NextArea()
     {
-        if (craneSequence.hasOperationStarted == false)
-        {
-            return; // Ignore if the operation hasn't started
-        }
-        
         currentSignalIndex++;
         if (currentSignalIndex >= targets.Length)
         {
@@ -120,8 +114,8 @@ public class SignalmanManager : MonoBehaviour
             Events.Instance.SequenceComplete();
 
             // Unsubscribe from events as the sequence is complete
-            Events.Instance.onLoadLoaded -= () => {isLoadAttached = true; ShowTarget(true);};
-            Events.Instance.onLoadUnloaded -= () => {isLoadAttached = false; ShowTarget(false);};
+            Events.Instance.onLoadLoaded -= OnLoadLoaded;
+            Events.Instance.onLoadUnloaded -= OnLoadUnloaded;
 
             targets[currentSignalIndex - 1].SetActive(false); // Hide the last target area
             
@@ -242,4 +236,16 @@ public class SignalmanManager : MonoBehaviour
         if (!craneSequence.isHookReady) return;
         if (direction != currentSignal) incorrectSignals++;
     }
+
+    void loadLoaded(bool isLoading)
+    {
+        isLoadAttached = isLoading;
+        ShowTarget(isLoading);
+        if (craneOpsUis == null) Debug.LogError("Unable to find crane ops UIs.", this);
+        else craneOpsUis.SetActive(isLoading);
+    }
+
+    // Named methods for event subscription/unsubscription
+    void OnLoadLoaded() => loadLoaded(true);
+    void OnLoadUnloaded() => loadLoaded(false);
 }

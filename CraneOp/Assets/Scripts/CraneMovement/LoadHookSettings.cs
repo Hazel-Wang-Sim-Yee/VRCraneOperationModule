@@ -21,12 +21,7 @@ public class LoadHookSettings : MonoBehaviour
     public XRGrabInteractable shackle;
     [Tooltip("Parent of the hook, socket and all rope segments. Their colliders are ignored by the load while attached.")]
     [SerializeField] Transform craneRoot;
-
-    [Header("Capacity")]
-    [Tooltip("Heaviest load (kg) the crane can lift. Heavier loads are refused and the player is told.")]
-    [SerializeField] float ratedCapacityKg = 50f;
-    [SerializeField] TextMeshProUGUI hookInfoText;
-
+    
     [Header("Joint")]
     [Tooltip("Locked = rigid hold. Untick to let the load swing.")]
     [SerializeField] bool lockRotation = true;
@@ -69,24 +64,6 @@ public class LoadHookSettings : MonoBehaviour
         {
             Debug.LogError("CollisionManager script not found in the scene. Please ensure that it is in the scene if you require load collision management functionality.");
         }
-        if (hookInfoText == null)
-        {
-            Debug.LogWarning("Hook info text not assigned. Please assign a TextMeshProUGUI component in the inspector if you want to display hook information.");
-        } else 
-        {
-            hookInfoText.text = $"Weight Limit: {ratedCapacityKg:0.#} kg";
-        }
-    }
-
-    /// <summary>
-    /// True if the given load is light enough for the crane. Other scripts (e.g. whatever
-    /// detects a load entering the socket) can call this before attaching.
-    /// </summary>
-    public bool IsWithinCapacity(GameObject candidate)
-    {
-        if (candidate == null) return true;
-        var rb = candidate.GetComponent<Rigidbody>();
-        return rb == null || rb.mass * candidate.GetComponent<CraneLoad>().massMultiplier <= ratedCapacityKg;
     }
 
     void OnTriggerEnter(Collider other)
@@ -119,20 +96,6 @@ public class LoadHookSettings : MonoBehaviour
 
         // If a joint already exists, do not create another one.
         if (joint != null) return;
-
-        // Too heavy: tell the player and don't attach anything.
-        if (!IsWithinCapacity(load))
-        {
-            float mass = load.GetComponent<Rigidbody>().mass;
-            if (UI.Instance != null)
-                UI.Instance.UpdateFeedbackText(
-                    $"This load is too heavy to lift ({mass * load.GetComponent<CraneLoad>().massMultiplier:0.#} kg). The crane's limit is {ratedCapacityKg:0.#} kg."
-                );
-            return;
-        } else
-        {
-            hookInfoText.gameObject.SetActive(false); // Hide the hook info text when a load is attached.
-        }
 
         StopAllCoroutines();   // Make sure the RestoreCollisionsLater coroutine is not running when attaching a new load.
 
@@ -204,10 +167,6 @@ public class LoadHookSettings : MonoBehaviour
 
         // Give the load time to clear the hook before collisions come back.
         StartCoroutine(RestoreCollisionsLater());
-        if (hookInfoText != null)
-        {
-            hookInfoText.gameObject.SetActive(true); // Hide the hook info text when a load is attached.
-        }
 
         SignalmanManager.Instance.isLoadAttached = false; // Set the isLoadAttached flag to false when the load is detached.
         shackle.interactionLayers = InteractionLayerMask.GetMask("Gear");

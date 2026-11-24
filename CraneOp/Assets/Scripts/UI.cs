@@ -63,7 +63,7 @@ public class UI : MonoBehaviour
         }
 
         Events.Instance.onItemCorrect += () => {UpdateFeedbackText("Correct!");};
-        Events.Instance.onItemWrong += () => {UpdateFeedbackText(FindObjectOfType<LoadSelector>()?"Wrong gear.":"Incorrect. Please try again.");};
+        Events.Instance.onItemWrong += () => {UpdateFeedbackText(FindAnyObjectByType<LoadSelector>()?"Wrong gear.":"Incorrect. Please try again.");};
     }
 
     /// <summary>

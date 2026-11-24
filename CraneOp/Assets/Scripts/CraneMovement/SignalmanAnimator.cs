@@ -31,64 +31,28 @@ public class SignalmanAnimator : MonoBehaviour
             }
         }
     }
+    static readonly string[] signalNames = { "Start", "Stop", "Up", "Down", "East", "South", "North", "West" };
 
-    // Update is called once per frame
     void Update()
     {
         var sm = SignalmanManager.Instance;
         string signal = (sm != null && sm.isLoadAttached) ? sm.currentSignal : "Idle";
-        if (signal == lastSignal)
-        return;
+        if (signal == lastSignal) return;
         lastSignal = signal;
-        animationPlayer.PlayAnimationViaInt("Signal", SignalId(signal));
-        Debug.Log($"Playing audio: {audioSource.clip?.name ?? "None"} for signal: {signal}");
+
+        int index = System.Array.IndexOf(signalNames, signal);   // -1 if not found
+        animationPlayer.PlayAnimationViaInt("Signal", index + 1);  // 0 = idle, 1..8 match your ids
+        PlaySignalAudio(index);
     }
-    
+
     /// <summary>
-    /// Set the int by the signal which is used to set the int in the animator.
+    /// Play the signal audio based on the index.
     /// </summary>
-    /// <param name="signal"></param>
-    /// <returns></returns>
-    int SignalId(string signal)
+    /// <param name="index"></param>
+    void PlaySignalAudio(int index)
     {
-        switch (signal)
-        {
-            case "Start":
-            audioSource.clip = signalAudios[0];
-            audioSource.Play();
-            return 1;
-            case "Stop":
-            audioSource.clip = signalAudios[1];
-            audioSource.Play();
-            return 2;
-            case "Up":
-            audioSource.clip = signalAudios[2];
-            audioSource.Play();
-            return 3;
-            case "Down":
-            audioSource.clip = signalAudios[3];
-            audioSource.Play();
-            return 4;
-            case "East":
-            audioSource.clip = signalAudios[4];
-            audioSource.Play();
-            return 5;
-            case "South":
-            audioSource.clip = signalAudios[5];
-            audioSource.Play();
-            return 6;
-            case "North":
-            audioSource.clip = signalAudios[6];
-            audioSource.Play();
-            return 7;
-            case "West":
-            audioSource.clip = signalAudios[7];
-            audioSource.Play();
-            return 8;
-            default:
-            audioSource.clip = null;
-            audioSource.Stop();
-            return 0;
-        }
+        audioSource.Stop();
+        if (index < 0 || index >= signalAudios.Length) return;
+        audioSource.PlayOneShot(signalAudios[index]);
     }
 }

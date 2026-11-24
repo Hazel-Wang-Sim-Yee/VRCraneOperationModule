@@ -18,6 +18,7 @@ public class ColliderDetect : MonoBehaviour
     [Header("Script References")]
     [SerializeField] private CraneSequence craneSequence;
     [SerializeField] LoadSelector loadSelector;
+    [SerializeField] Pivot pivot;
 
     [Header("Colour Settings")]
     [SerializeField] private Material insideColor;
@@ -152,21 +153,18 @@ public class ColliderDetect : MonoBehaviour
         }*/
         if (other.CompareTag("Load") && CompareTag("CraneDestination"))
         {
-            if (craneSequence.hasOperationStarted)
+            meshRenderer.material = insideColor; // Change the color of the crane destination to green when the load is in position
+            if (craneSequence.isCraneMoving == false)
             {
-                meshRenderer.material = insideColor; // Change the color of the crane destination to green when the load is in position
-                if (craneSequence.isCraneMoving == false)
+                bool settled = pivot == null || pivot.SwingAmount < 1f;
+                if (settled)
                 {
                     Rigidbody rb = other.attachedRigidbody;
-                    bool settled = rb == null || rb.linearVelocity.sqrMagnitude < 0.05f;
-                    if (!craneSequence.isCraneMoving && settled)
-                    {
-                        Vector3 loadPoint = rb != null ? rb.worldCenterOfMass : other.bounds.center;
-                        Vector3 diff = transform.position - loadPoint;
-                        diff.y = 0f;
-                        craneSequence.CalculatePlacement(diff.magnitude);
-                        SignalmanManager.Instance.NextArea(); // Move on to the next area if the crane is not moving and the load is in position
-                    }
+                    Vector3 loadPoint = rb != null ? rb.worldCenterOfMass : other.bounds.center;
+                    Vector3 diff = transform.position - loadPoint;
+                    diff.y = 0f;
+                    craneSequence.CalculatePlacement(diff.magnitude);
+                    SignalmanManager.Instance.NextArea();
                 }
             }
         } else if (other.CompareTag("Hook") && CompareTag("CraneDestination"))

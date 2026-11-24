@@ -17,6 +17,8 @@ public class ControllerState : MonoBehaviour
     public bool isButtonPressed = false;
     private string buttonName;
     [SerializeField] List<ControllerState> otherButtonStates;
+    [SerializeField] AudioClip craneMoveAudio;
+    [SerializeField] AudioSource audioSource;
 
     [Header("Script References")]
     CraneSequence craneSequence;
@@ -26,6 +28,7 @@ public class ControllerState : MonoBehaviour
     {
         craneSequence = FindAnyObjectByType<CraneSequence>();
         craneHoistMove = FindAnyObjectByType<CraneHoistMove>();
+        Events.Instance.onStopMovement += ResetState;
         buttonName = gameObject.name;
     }
     
@@ -57,12 +60,22 @@ public class ControllerState : MonoBehaviour
             UpdateButtonColor();
             craneSequence.SetCraneMovingState(true);
             SignalmanManager.Instance.CheckSignal(buttonName);
+
+            if (audioSource.clip != null)
+            {
+                audioSource.Stop();
+                audioSource.clip = null;
+            }
+            audioSource.clip = craneMoveAudio;
+            audioSource.Play();
         }
         else if (isButtonPressed == false)
         {
             Events.Instance.StopMovement();
             UpdateButtonColor();
             craneSequence.SetCraneMovingState(false);
+            audioSource.Stop();
+            audioSource.clip = null;
         }
         else
             Debug.LogError("isButtonPressed has an invalid state.");
@@ -81,5 +94,13 @@ public class ControllerState : MonoBehaviour
             return;
 
         image.color = isButtonPressed ? activeColor : inactiveColor;
+    }
+
+    void ResetState()
+    {
+        isButtonPressed = false;
+        GetComponent<Image>().color = inactiveColor;
+        audioSource.clip = null;
+        audioSource.Stop();
     }
 }

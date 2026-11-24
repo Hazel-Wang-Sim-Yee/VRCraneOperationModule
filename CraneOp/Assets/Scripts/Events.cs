@@ -5,6 +5,7 @@
 using UnityEngine;
 using System;
 
+[DefaultExecutionOrder(-100)]
 public class Events : MonoBehaviour
 {
 public static Events Instance { get; private set; }

@@ -1,3 +1,7 @@
+/*
+    This script handles the interaction of the pendant which includes rescaling and locking/unlocking of the interaction.
+    This script can be expanded to other uses if needed.
+*/
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.XR.Interaction.Toolkit.Interactables;
@@ -45,16 +49,6 @@ public class Interactables : MonoBehaviour
     /// <param name="scaleFactor"></param>
     public void Rescale(float scaleFactor)
     {
-        foreach (Transform child in interactable)
-        {
-            if (child != null)
-            {
-                child.localScale = new Vector3(scaleFactor, scaleFactor, scaleFactor);
-            }
-            else
-            {
-                Debug.LogWarning("Child Transform is null. Please ensure all children are assigned correctly.");
-            }
-        }
+        transform.localScale = new Vector3(scaleFactor, scaleFactor, scaleFactor);
     }
 }

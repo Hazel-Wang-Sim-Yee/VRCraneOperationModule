@@ -119,6 +119,7 @@ public class CraneSequence : MonoBehaviour
     /// </summary>
     void CompleteOperation()
     {
+        SFXHandler.Instance.Play(SFXHandler.Instance.completed);
         hasOperationCompleted = true;
         loadInteractable.interactionLayers = InteractionLayerMask.GetMask("Load");
         UI.Instance.finalScoreCanvas.gameObject.SetActive(true);
@@ -145,6 +146,7 @@ public class CraneSequence : MonoBehaviour
             EnableAllButtons(false); // Disable all buttons if the start button is not pressed
             hasOperationStarted = false; // Reset the operation state if the start button is not pressed
             Events.Instance.StopMovement();
+            isCraneMoving = false;
         }
 
         UI.Instance.UpdateFeedbackText(startButtonPressed ? "Operation Started!" : "Operation Stopped!");

@@ -10,6 +10,7 @@ public class Pivot : MonoBehaviour
     Vector2 angle, angVel;
     [SerializeField] float stiffness = 20f, damping = 2f, kick = 0.15f, maxAngle = 15f;
     Vector3 lastPos, prevVelocity;
+    public float SwingAmount => Mathf.Max(Mathf.Abs(angle.x), Mathf.Abs(angle.y));
     
     void Start()
     {

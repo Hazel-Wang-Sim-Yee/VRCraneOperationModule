@@ -241,6 +241,7 @@ public class LoadSelector : MonoBehaviour
     {
         if (string.IsNullOrEmpty(currentSelectedOption))
         {
+            // Prevent feedback spam
             if (rejectedGear == gearInteractable) return;
             UI.Instance.UpdateFeedbackText("Select a load first.");
             rejectedGear = gearInteractable;
@@ -248,12 +249,13 @@ public class LoadSelector : MonoBehaviour
         }
         if (!gearsToCheck.Contains(gearName))
         {
+            // Prevent feedback spam
             if (rejectedGear == gearInteractable) return;
             rejectedGear = gearInteractable;
             Events.Instance.ItemWrong();
             return;
         }
-        if (placedGears.Contains(gearInteractable)) return;
+        if (placedGears.Contains(gearInteractable)) return; // Check if the same item is already placed. If it is, exit the check
 
         var item = gearInteractable.GetComponent<GearSettings>();
         LoadDetails details = GetLoad(currentSelectedOption);
@@ -276,6 +278,8 @@ public class LoadSelector : MonoBehaviour
             numberOfGearsFound++;
             Events.Instance.ItemCorrect();
             if (waitingCoroutine != null) return;
+
+            // Check if the player had placed all the gears
             if (gearsToCheck.Count > 0 && gearsToCheck.Count == numberOfGearsFound)
                 waitingCoroutine = StartCoroutine(WaitBeforeMoving());
             break;

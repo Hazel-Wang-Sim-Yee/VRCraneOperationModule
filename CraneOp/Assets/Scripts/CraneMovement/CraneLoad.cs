@@ -4,10 +4,11 @@
     Put this on the root of any liftable load (regular or irregular). Needs a Rigidbody on the same object.
     Colliders can be on this object or on its children (compound collider for irregular shapes).
     Created by: Claude
-    NOTE: Only line renderer functionality is currently implemented.
+    NOTE: Only line renderer, toggling of load center and UIs functionalities are currently implemented.
     Other features like mass and center of mass configuration are present but not used in the current game logic.
 */
 using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
 
 [RequireComponent(typeof(Rigidbody))]
@@ -29,6 +30,13 @@ public class CraneLoad : MonoBehaviour
     [SerializeField] Vector3 localCenterOfMass;
     public float massMultiplier = 1f; // Multiplier to adjust the mass of the load dynamically
 
+    [Header("Load Center Settings")]
+    [SerializeField] GameObject centerMarker;
+    [SerializeField] Renderer[] loadRenderers;
+    [SerializeField] Material[][] loadMaterials;
+    [SerializeField] Material showingCenterMaterial;
+    bool isShowing;
+
     public Rigidbody Body { get; private set; }
     public Transform LiftingPoint => liftingPoint != null ? liftingPoint : transform;
     public bool HasLiftingPoint => liftingPoint != null;
@@ -38,8 +46,9 @@ public class CraneLoad : MonoBehaviour
     bool drawLine = false; // Flag to indicate whether to draw the line to the target area
 
     [Header("UI Settings")]
-    [Tooltip("The canvas to display load information (e.g., weight, type).")]
-    [SerializeField] Canvas loadInfoCanvas; // Canvas to display load information (e.g., weight, type)
+    [Tooltip("The image to display load information (e.g., weight, type).")]
+    [SerializeField] Image loadInfoImage; // Image to display load information (e.g., weight, type)
+    [SerializeField] Canvas loadInfoCanvas;
 
     [Header("Script References")]
     [SerializeField] LoadHookSettings loadHookSettings;
@@ -51,30 +60,37 @@ public class CraneLoad : MonoBehaviour
         if (overrideCenterOfMass) Body.centerOfMass = localCenterOfMass;
     }
 
+    void OnEnable()
+    {
+        Events.Instance.onLoadLoaded += OnLoadLoaded;
+        Events.Instance.onLoadUnloaded += OnLoadUnloaded;
+    }
+
     void Start()
     {
-        Events.Instance.onLoadLoaded += () => {drawLine = true; loadInfoCanvas.gameObject.SetActive(false); lineRenderer.enabled = true;};
-        Events.Instance.onLoadUnloaded += () => {drawLine = false; loadInfoCanvas.gameObject.SetActive(true); lineRenderer.enabled = false;};
-
-        if (loadInfoCanvas != null)
-        {
-            loadInfoCanvas.GetComponentInChildren<TextMeshProUGUI>().text = $"Type: {loadType}\nWeight: {mass * massMultiplier:0.#} kg";
-        }
+        if (loadInfoImage != null)
+            loadInfoImage.GetComponentInChildren<TextMeshProUGUI>().text = $"Type: {loadType}\nWeight: {mass * massMultiplier:0.#} kg";
         if (lineRenderer == null)
         {
             lineRenderer = GetComponent<LineRenderer>();
             if (lineRenderer == null)
-            {
                 Debug.LogWarning("LineRenderer component not found on the load. Please add a LineRenderer component to visualize the line to the target.");
-            }
         }
         if (loadHookSettings == null)
         {
             loadHookSettings = FindAnyObjectByType<LoadHookSettings>();
             if (loadHookSettings == null)
-            {
                 Debug.LogError("LoadHookSettings script not found in the scene. Please ensure it is attached to a GameObject.");
-            }
+        }
+
+        if (loadInfoCanvas == null) Debug.LogError("loadInfoCanvas not found.");
+        loadMaterials = new Material[loadRenderers.Length][];
+        for (int i = 0; i < loadRenderers.Length; i++)
+        {
+            if (loadRenderers[i] != null)
+                loadMaterials[i] = loadRenderers[i].sharedMaterials;
+            else
+                Debug.LogWarning("Renderer at index " + i + " is not assigned in the inspector.");
         }
     }
 
@@ -85,19 +101,12 @@ public class CraneLoad : MonoBehaviour
             if (SignalmanManager.Instance.currentSignalIndex < SignalmanManager.Instance.targets.Length)
             {
                 if (drawLine && lineRenderer != null)
-                {
                     DrawLineToTarget(SignalmanManager.Instance.targets[SignalmanManager.Instance.currentSignalIndex].transform.position);
-                } else if (!drawLine && lineRenderer != null)
-                {
+                else if (!drawLine && lineRenderer != null)
                     lineRenderer.positionCount = 0; // Clear the line when not drawing
-                }
             } else 
-            {
                 if (lineRenderer != null)
-                {
                     lineRenderer.positionCount = 0; // Load reached the last target, clear the line
-                }
-            }
         }
     }
 
@@ -158,4 +167,51 @@ public class CraneLoad : MonoBehaviour
         lineRenderer.SetPosition(0, transform.position);
         lineRenderer.SetPosition(1, target);
     }
+
+    /// <summary>
+    /// Toggle the load material to allow the player to see the center of mass of the load/return the material back to original.
+    /// </summary>
+    public void ToggleCenterOfMass()
+    {
+        if (centerMarker == null) return;
+        isShowing = !isShowing;
+        centerMarker.SetActive(isShowing);
+        if (isShowing)
+        {
+            loadInfoImage.gameObject.SetActive(false);
+            centerMarker.transform.position = Body.worldCenterOfMass;
+            for (int i = 0; i < loadRenderers.Length; i++)
+                loadRenderers[i].sharedMaterials = new Material[] { showingCenterMaterial };
+        }
+        else
+        {
+            loadInfoImage.gameObject.SetActive(true);
+            for (int i = 0; i < loadRenderers.Length; i++)
+            {
+                if (loadRenderers[i] == null || loadMaterials[i] == null) continue;
+                loadRenderers[i].sharedMaterials = loadMaterials[i];
+            }
+        }
+    }
+
+    /// <summary>
+    /// Toggle the material of the load, loadInfoCanvas and line renderer based on a loading state.
+    /// </summary>
+    /// <param name="isLoading"></param>
+    void LoadUnloadToggles(bool isLoading)
+    {
+        loadInfoCanvas.gameObject.SetActive(!isLoading);
+        for (int i = 0; i < loadRenderers.Length; i++)
+        {
+            if (loadRenderers[i] == null || loadMaterials[i] == null) continue;
+            loadRenderers[i].sharedMaterials = loadMaterials[i];
+        }
+        
+        drawLine = isLoading;
+        if (lineRenderer != null && lineRenderer.enabled != isLoading)
+            lineRenderer.enabled = isLoading;
+    }
+
+    void OnLoadLoaded() => LoadUnloadToggles(true);
+    void OnLoadUnloaded() => LoadUnloadToggles(false);
 }
